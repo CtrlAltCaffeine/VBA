@@ -1,199 +1,85 @@
 Sub CalculateAverage()
-
     Dim rng As Range
-
     Dim cell As Range
-
     Dim total As Double
-
     Dim count As Integer
-
     Dim average As Double
-
     
-
     ' Set the range to calculate average
-
     Set rng = Range("A1:A10")
-
     
-
     ' Initialize variables
-
     total = 0
-
     count = 0
-
     
-
     ' Loop through each cell in the range
-
     For Each cell In rng
-
         ' Check if the cell is not empty
-
         If Not IsEmpty(cell) Then
-
             ' Increment the count
-
             count = count + 1
-
             
-
             ' Add the cell value to the total
-
             total = total + cell.Value
-
         End If
-
     Next cell
-
     
-
     ' Calculate the average
-
     If count > 0 Then
-
         average = total / count
-
     Else
-
         average = 0
-
     End If
-
     
-
     ' Display the average
-
     MsgBox "The average is: " & average
-
 End Sub
 
 Sub SortData()
-
     Dim rng As Range
-
     Dim lastRow As Long
-
     
-
     ' Set the range to sort
-
     Set rng = Range("A1:B10")
-
     
-
     ' Get the last row in the range
-
     lastRow = rng.Rows.Count + rng.Row - 1
-
     
-
     ' Sort the range in ascending order based on column A
-
     rng.Sort Key1:=Range("A1:A" & lastRow), _
-
               Order1:=xlAscending, _
-
               Header:=xlYes
-
     
-
     ' Display a message
-
     MsgBox "Data sorted successfully!"
-
 End Sub
 
 Sub CopyData()
-
     Dim sourceRange As Range
-
     Dim destinationRange As Range
-
     
-
     ' Set the source range
-
     Set sourceRange = Range("A1:A10")
-
     
-
     ' Set the destination range
-
     Set destinationRange = Range("B1")
-
     
-
     ' Copy the data from source to destination
-
     sourceRange.Copy Destination:=destinationRange
-
     
-
     ' Display a message
-
     MsgBox "Data copied successfully!"
-
 End Sub
 
 ' ... Add more procedures or functions here ...
 
 Sub Main()
-
     ' Call the procedures
-
     CalculateAverage
-
     SortData
-
     CopyData
-
     
-
     ' ... Call more procedures or functions here ...
-
     
-
     MsgBox "All tasks completed!"
-
 End Sub
-
-import pandas as pd
-
-# Load the Excel sheet into a DataFrame
-df = pd.read_excel('your_excel_file.xlsx')
-
-# Add a new column named "notes" at the end
-df['notes'] = ''
-
-# Iterate row-wise
-for i, row in df.iterrows():
-    # Check if row i and column 1 contain "FUT" or "MM"
-    if 'FUT' in row[1] or 'MM' in row[1]:
-        continue  # Ignore this row and move to the next one
-
-    # Check if the value in column 22 falls within the range of column 6 and column 5
-    if row[5] <= row[21] <= row[4] or row[4] <= row[21] <= row[5]:
-        df.at[i, 'notes'] = 'within Bloomberg range'
-        continue  # Move to the next row
-
-    # Check if the value in column 22 falls within the range of column 4 and column 5
-    if row[4] <= row[21] <= row[5]:
-        df.at[i, 'notes'] = 'within Reuters range'
-        continue  # Move to the next row
-
-    # Check if the values in column 5 or column 6 are empty and the value in column 22
-    # falls within the range of column 17 and column 18
-    if pd.isnull(row[5]) or pd.isnull(row[4]):
-        if row[16] <= row[21] <= row[17]:
-            df.at[i, 'notes'] = 'within blended range'
-            continue  # Move to the next row
-
-    # If none of the conditions are met, write "check again" in the notes column
-    df.at[i, 'notes'] = 'check again'
-
-# Save the modified DataFrame back to the Excel file
-df.to_excel('processed_excel_file.xlsx', index=False)
-
