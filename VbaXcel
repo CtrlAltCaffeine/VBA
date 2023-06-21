@@ -1,4 +1,4 @@
-function saveAttachmentsFromSender() {
+function downloadAttachmentsFromSender() {
   var sender = "rakesh@example.com"; // Default sender's email address
   var threads = GmailApp.search('from:' + sender + ' is:unread');
 
@@ -12,11 +12,13 @@ function saveAttachmentsFromSender() {
         for (var k = 0; k < attachments.length; k++) {
           var attachment = attachments[k];
           var attachmentName = attachment.getName();
+          var attachmentData = attachment.copyBlob();
 
-          // Save the attachment to Google Drive
-          attachment.saveAs(attachmentName);
+          // Download the attachment
+          var blob = Utilities.newBlob(attachmentData.getBytes(), attachmentData.getContentType(), attachmentName);
+          DriveApp.createFile(blob);
 
-          Logger.log("Saved attachment: " + attachmentName);
+          Logger.log("Downloaded attachment: " + attachmentName);
         }
       }
 
