@@ -83,3 +83,40 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+
+function downloadAttachmentsFromSendersWithSubject() {
+  var senders = ["rakesh@example.com", "john@example.com", "mary@example.com"]; // Array of sender email addresses
+  var subjectKeyword = "test"; // The desired subject keyword
+  var threads = [];
+
+  for (var i = 0; i < senders.length; i++) {
+    var sender = senders[i];
+    var senderThreads = GmailApp.search('from:' + sender + ' is:unread subject:' + subjectKeyword);
+    threads = threads.concat(senderThreads);
+  }
+
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+
+    for (var j = 0; j < messages.length; j++) {
+      var attachments = messages[j].getAttachments();
+
+      if (attachments.length > 0) {
+        for (var k = 0; k < attachments.length; k++) {
+          var attachment = attachments[k];
+          var attachmentName = attachment.getName();
+          var attachmentData = attachment.copyBlob();
+
+          // Download the attachment
+          var blob = Utilities.newBlob(attachmentData.getBytes(), attachmentData.getContentType(), attachmentName);
+          DriveApp.createFile(blob);
+
+          Logger.log("Downloaded attachment: " + attachmentName);
+        }
+      }
+
+      // Mark the email as read
+      messages[j].markRead();
+    }
+  }
+}
