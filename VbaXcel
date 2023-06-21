@@ -141,4 +141,34 @@ function downloadAttachmentsFromSender() {
   }
 }
 
+function downloadAttachmentsFromSender() {
+  var sender = "rakesh@example.com"; // Default sender's email address
+  var threads = GmailApp.search('from:' + sender + ' is:unread');
+
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+
+    for (var j = 0; j < messages.length; j++) {
+      var attachments = messages[j].getAttachments();
+
+      if (attachments.length > 0) {
+        for (var k = 0; k < attachments.length; k++) {
+          var attachment = attachments[k];
+          var attachmentName = attachment.getName();
+
+          // Download the attachment to local machine
+          attachment.downloadAsFile(attachmentName);
+
+          Logger.log("Downloaded attachment: " + attachmentName);
+        }
+      }
+
+      // Mark the email as read
+      messages[j].markRead();
+    }
+  }
+}
+
+
+
 
