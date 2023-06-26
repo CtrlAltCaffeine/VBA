@@ -83,3 +83,58 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+
+function downloadAttachmentsFromSheet() {
+  var sheetId = "YOUR_SHEET_ID"; // Replace with the ID of your Google Sheet
+  var sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
+  var dataRange = sheet.getDataRange();
+  var data = dataRange.getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    var email = data[i][0];
+    var subject = data[i][1];
+    var folderName = data[i][2];
+
+    var threads = GmailApp.search('from:' + email + ' is:unread subject:' + subject);
+
+    for (var j = 0; j < threads.length; j++) {
+      var messages = threads[j].getMessages();
+
+      for (var k = 0; k < messages.length; k++) {
+        var attachments = messages[k].getAttachments();
+
+        if (attachments.length > 0) {
+          var folder = getOrCreateFolder(folderName);
+
+          for (var l = 0; l < attachments.length; l++) {
+            var attachment = attachments[l];
+            var attachmentName = attachment.getName();
+            var attachmentData = attachment.copyBlob();
+
+            // Save the attachment to the folder in Google Drive
+            var blob = Utilities.newBlob(attachmentData.getBytes(), attachmentData.getContentType(), attachmentName);
+            var file = folder.createFile(blob);
+
+            Logger.log("Saved attachment: " + attachmentName + " in folder: " + folderName + " - File ID: " + file.getId());
+          }
+        }
+
+        // Mark the email as read
+        messages[k].markRead();
+      }
+    }
+  }
+}
+
+function getOrCreateFolder(folderName) {
+  var folder;
+  var folders = DriveApp.getFoldersByName(folderName);
+
+  if (folders.hasNext()) {
+    folder = folders.next();
+  } else {
+    folder = DriveApp.createFolder(folderName);
+  }
+
+  return folder;
+}
