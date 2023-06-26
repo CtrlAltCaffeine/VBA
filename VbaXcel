@@ -1,85 +1,25 @@
-Sub CalculateAverage()
-    Dim rng As Range
-    Dim cell As Range
-    Dim total As Double
-    Dim count As Integer
-    Dim average As Double
-    
-    ' Set the range to calculate average
-    Set rng = Range("A1:A10")
-    
-    ' Initialize variables
-    total = 0
-    count = 0
-    
-    ' Loop through each cell in the range
-    For Each cell In rng
-        ' Check if the cell is not empty
-        If Not IsEmpty(cell) Then
-            ' Increment the count
-            count = count + 1
-            
-            ' Add the cell value to the total
-            total = total + cell.Value
-        End If
-    Next cell
-    
-    ' Calculate the average
-    If count > 0 Then
-        average = total / count
-    Else
-        average = 0
-    End If
-    
-    ' Display the average
-    MsgBox "The average is: " & average
-End Sub
+import pandas as pd
 
-Sub SortData()
-    Dim rng As Range
-    Dim lastRow As Long
-    
-    ' Set the range to sort
-    Set rng = Range("A1:B10")
-    
-    ' Get the last row in the range
-    lastRow = rng.Rows.Count + rng.Row - 1
-    
-    ' Sort the range in ascending order based on column A
-    rng.Sort Key1:=Range("A1:A" & lastRow), _
-              Order1:=xlAscending, _
-              Header:=xlYes
-    
-    ' Display a message
-    MsgBox "Data sorted successfully!"
-End Sub
+df = pd.read_excel('your_file.xlsx')
+df['notes'] = ""
+total_rows = len(df)
+change_value = float(input("Enter the 'change value': "))
+base_change = float(input("Enter the 'base change': "))
 
-Sub CopyData()
-    Dim sourceRange As Range
-    Dim destinationRange As Range
-    
-    ' Set the source range
-    Set sourceRange = Range("A1:A10")
-    
-    ' Set the destination range
-    Set destinationRange = Range("B1")
-    
-    ' Copy the data from source to destination
-    sourceRange.Copy Destination:=destinationRange
-    
-    ' Display a message
-    MsgBox "Data copied successfully!"
-End Sub
+for i in range(1, total_rows):
+    if 'FUTURE' in df.iloc[i, 2] or 'MM' in df.iloc[i, 2]:
+        continue
 
-' ... Add more procedures or functions here ...
+    for j in range(i, total_rows):
+        df.iloc[j, 16] = df.iloc[i, 17] - (base_change * (j - i + 1) / 100)
 
-Sub Main()
-    ' Call the procedures
-    CalculateAverage
-    SortData
-    CopyData
-    
-    ' ... Call more procedures or functions here ...
-    
-    MsgBox "All tasks completed!"
-End Sub
+        if df.iloc[j, 16] >= df.iloc[j, 6] and df.iloc[j, 16] <= df.iloc[j, 7]:
+            df.at[j, 'notes'] = "within BBG range"
+        elif df.iloc[j, 16] >= df.iloc[j, 4] and df.iloc[j, 16] <= df.iloc[j, 5]:
+            df.at[j, 'notes'] = "within RT range"
+        elif pd.isna(df.iloc[j, 4]) or pd.isna(df.iloc[j, 6]):
+            if df.iloc[j, 16] >= df.iloc[j, 12] and df.iloc[j, 16] <= df.iloc[j, 13]:
+                df.at[j, 'notes'] = "within blended range"
+
+df.loc[df.iloc[:, 2].isin(['FUTURE', 'MM']) == False, 18] = df.iloc[:, 16] - df.iloc[:, 17]
+df.to_excel('your_file.xlsx', index=False)
