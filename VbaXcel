@@ -6,9 +6,10 @@ new_df['PBC Cycle'] = ['1D-RTH-RTH'] * len(original_df)
 new_df['Pos Date'] = original_df['Pos Date'].apply(lambda x: x.split(' ')[1:4]).str.join(' ')
 new_df['Bus Date'] = original_df['Bus Date'].apply(lambda x: x.split(' ')[1:3]).str.join(' ')
 new_df['Run Date'] = pd.Timestamp.now().strftime('%b %d %Y')
-new_df['CMF'] = original_df['Portfolio'].apply(lambda x: x.split('-')[0].strip())
-new_df['PBA'] = original_df['Portfolio'].apply(lambda x: x.split('-')[1].strip())
-new_df['CGM Account'] = original_df['Portfolio'].apply(lambda x: x.split(':')[1].strip().split()[0])
+portfolio_values = original_df['Portfolio'].str.split('-', expand=True)
+new_df['CMF'] = portfolio_values[0].str.strip()
+new_df['PBA'] = portfolio_values[1].str.strip().str.split(':', expand=True)[0]
+new_df['CGM Account'] = original_df['Portfolio'].str.split(':', expand=True)[1].str.strip().str.split('-', expand=True)[0]
 new_df['account name'] = ''
 
 print(new_df)
