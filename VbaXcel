@@ -83,3 +83,19 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+
+import pandas as pd
+import datetime
+
+new_df = pd.DataFrame()
+
+new_df['PBC Cycle'] = ['1D-RTH-RTH'] * len(original_df)
+new_df['Pos Date'] = pd.to_datetime(original_df['Pos Date']).dt.strftime('%b %d %Y')
+new_df['Bus Date'] = pd.to_datetime(original_df['Bus Date']).dt.strftime('%b %Y')
+new_df['Run Date'] = datetime.datetime.now().strftime('%b %d %Y')
+new_df['CMF'] = original_df['Portfolio'].apply(lambda x: x.split('-')[0].strip())
+new_df['PBA'] = original_df['Portfolio'].apply(lambda x: x.split('-')[1].strip())
+new_df['CGM Account'] = original_df['Portfolio'].apply(lambda x: x.split(':')[1].strip().split()[0])
+new_df['account name'] = ''
+
+print(new_df)
