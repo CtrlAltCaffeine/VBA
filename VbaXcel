@@ -83,28 +83,3 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
-
-import pandas as pd
-import os
-
-def kuchV(folder_path, columns):
-    big_df = pd.DataFrame()
-
-    if folder_path.startswith('Current'):
-        file_prefix = 'Current'
-    elif folder_path.startswith('Prev'):
-        file_prefix = 'Prev'
-    else:
-        return big_df  # Return empty DataFrame if folder path doesn't start with 'Current' or 'Prev'
-
-    for file in os.listdir(folder_path):
-        if file.startswith(file_prefix) and file.lower().endswith('.csv'):
-            file_path = os.path.join(folder_path, file)
-            df = pd.read_csv(file_path)
-
-            filtered_df = df[df['PB Class'] == 'Reserve']
-            filtered_df = filtered_df[columns]  # Select desired columns
-
-            big_df = pd.concat([big_df, filtered_df], ignore_index=True)
-
-    return big_df
