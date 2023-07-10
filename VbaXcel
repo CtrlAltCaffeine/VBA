@@ -83,19 +83,3 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
-
-import pandas as pd
-import numpy as np
-
-# Create the dataframe
-df = pd.DataFrame()
-
-# Fill values in columns A and B
-df['A'] = [0.0, 1.5, 2.7, 0.0, 4.2]
-df['B'] = [0.0, 2.3, 0.0, 3.1, 5.5]
-
-# Handle division by zero error
-with np.errstate(divide='ignore', invalid='ignore'):
-    df['C'] = np.where(df['B'] != 0, df['A'] / df['B'], np.nan)
-
-print(df)
