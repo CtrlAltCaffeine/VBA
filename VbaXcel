@@ -1,19 +1,85 @@
-Subject: Request for Rescheduling Drop Timing to 6 PM - Operational Work
+Sub CalculateAverage()
+    Dim rng As Range
+    Dim cell As Range
+    Dim total As Double
+    Dim count As Integer
+    Dim average As Double
+    
+    ' Set the range to calculate average
+    Set rng = Range("A1:A10")
+    
+    ' Initialize variables
+    total = 0
+    count = 0
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        ' Check if the cell is not empty
+        If Not IsEmpty(cell) Then
+            ' Increment the count
+            count = count + 1
+            
+            ' Add the cell value to the total
+            total = total + cell.Value
+        End If
+    Next cell
+    
+    ' Calculate the average
+    If count > 0 Then
+        average = total / count
+    Else
+        average = 0
+    End If
+    
+    ' Display the average
+    MsgBox "The average is: " & average
+End Sub
 
-Dear India Admin,
+Sub SortData()
+    Dim rng As Range
+    Dim lastRow As Long
+    
+    ' Set the range to sort
+    Set rng = Range("A1:B10")
+    
+    ' Get the last row in the range
+    lastRow = rng.Rows.Count + rng.Row - 1
+    
+    ' Sort the range in ascending order based on column A
+    rng.Sort Key1:=Range("A1:A" & lastRow), _
+              Order1:=xlAscending, _
+              Header:=xlYes
+    
+    ' Display a message
+    MsgBox "Data sorted successfully!"
+End Sub
 
-I hope this email finds you well. I am writing to request a rescheduling of my drop timing to 6 PM due to the operational work I am currently engaged in. I apologize for any inconvenience this may cause and appreciate your understanding in this matter.
+Sub CopyData()
+    Dim sourceRange As Range
+    Dim destinationRange As Range
+    
+    ' Set the source range
+    Set sourceRange = Range("A1:A10")
+    
+    ' Set the destination range
+    Set destinationRange = Range("B1")
+    
+    ' Copy the data from source to destination
+    sourceRange.Copy Destination:=destinationRange
+    
+    ' Display a message
+    MsgBox "Data copied successfully!"
+End Sub
 
-As you may be aware, I am involved in crucial operational tasks that require my focused attention and dedication. These tasks have unexpectedly extended beyond regular working hours, making it challenging for me to adhere to the existing drop timing. By rescheduling the drop timing to 6 PM, I will have sufficient time to wrap up my operational responsibilities and ensure a smooth transition before concluding my workday.
+' ... Add more procedures or functions here ...
 
-I understand that the current drop timing has been established for the convenience of all team members, and I greatly value the collaborative environment we have. However, the nature of my operational work demands flexibility, and I believe that this adjustment will enhance my efficiency and productivity, ultimately benefiting the entire team.
-
-I assure you that this request is solely driven by the demands of my operational role, and I remain committed to fulfilling my duties and responsibilities to the best of my abilities. I am willing to discuss this matter further or provide any additional information that may be required to support my request.
-
-Thank you for your attention to this matter. I look forward to your favorable response and appreciate your assistance in accommodating this rescheduling request.
-
-Yours sincerely,
-
-[Your Name]
-[Your Employee ID/Designation]
-[Your Contact Information]
+Sub Main()
+    ' Call the procedures
+    CalculateAverage
+    SortData
+    CopyData
+    
+    ' ... Call more procedures or functions here ...
+    
+    MsgBox "All tasks completed!"
+End Sub
