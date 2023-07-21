@@ -83,3 +83,60 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+
+function downloadFileFromHyperlink() {
+  var sender = "rakesh@example.com"; // Replace with the sender's email address
+  var threads = GmailApp.search('from:' + sender + ' is:unread');
+
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+
+    for (var j = 0; j < messages.length; j++) {
+      var email = messages[j];
+      var attachments = email.getAttachments();
+
+      if (attachments.length === 0) {
+        // If there are no attachments, parse the email body for hyperlinks
+        var body = email.getBody();
+        var urls = extractUrlsFromBody(body);
+
+        for (var k = 0; k < urls.length; k++) {
+          var url = urls[k];
+          downloadFileFromUrl(url);
+        }
+      }
+
+      // Mark the email as read
+      email.markRead();
+    }
+  }
+}
+
+function extractUrlsFromBody(body) {
+  var urls = [];
+  var regex = /https?:\/\/[^\s]+/g;
+  var matches = body.match(regex);
+
+  if (matches) {
+    urls = matches.filter(function (url) {
+      // Add any additional filtering if needed
+      return true;
+    });
+  }
+
+  return urls;
+}
+
+function downloadFileFromUrl(url) {
+  var response = UrlFetchApp.fetch(url);
+  var fileBlob = response.getBlob();
+
+  // Modify the filename as needed, or get it from the response headers
+  var fileName = "downloaded_file.txt";
+
+  // Save the downloaded file to Google Drive
+  var folder = DriveApp.getRootFolder(); // Change to your desired folder
+  folder.createFile(fileBlob.setName(fileName));
+
+  Logger.log("Downloaded file from URL: " + url);
+}
