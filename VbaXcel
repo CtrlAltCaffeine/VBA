@@ -1,113 +1,32 @@
-Sub CalculateAverage()
-    Dim rng As Range
-    Dim cell As Range
-    Dim total As Double
-    Dim count As Integer
-    Dim average As Double
-    
-    ' Set the range to calculate average
-    Set rng = Range("A1:A10")
-    
-    ' Initialize variables
-    total = 0
-    count = 0
-    
-    ' Loop through each cell in the range
-    For Each cell In rng
-        ' Check if the cell is not empty
-        If Not IsEmpty(cell) Then
-            ' Increment the count
-            count = count + 1
-            
-            ' Add the cell value to the total
-            total = total + cell.Value
-        End If
-    Next cell
-    
-    ' Calculate the average
-    If count > 0 Then
-        average = total / count
-    Else
-        average = 0
-    End If
-    
-    ' Display the average
-    MsgBox "The average is: " & average
-End Sub
+function downloadAttachmentsFromSendersWithSubject() {
+  var senders = ["rakesh@example.com", "john@example.com", "mary@example.com"];
+  var subjectKeyword = "test";
+  var threads = [];
 
-Sub SortData()
-    Dim rng As Range
-    Dim lastRow As Long
-    
-    ' Set the range to sort
-    Set rng = Range("A1:B10")
-    
-    ' Get the last row in the range
-    lastRow = rng.Rows.Count + rng.Row - 1
-    
-    ' Sort the range in ascending order based on column A
-    rng.Sort Key1:=Range("A1:A" & lastRow), _
-              Order1:=xlAscending, _
-              Header:=xlYes
-    
-    ' Display a message
-    MsgBox "Data sorted successfully!"
-End Sub
-
-Sub CopyData()
-    Dim sourceRange As Range
-    Dim destinationRange As Range
-    
-    ' Set the source range
-    Set sourceRange = Range("A1:A10")
-    
-    ' Set the destination range
-    Set destinationRange = Range("B1")
-    
-    ' Copy the data from source to destination
-    sourceRange.Copy Destination:=destinationRange
-    
-    ' Display a message
-    MsgBox "Data copied successfully!"
-End Sub
-
-' ... Add more procedures or functions here ...
-
-Sub Main()
-    ' Call the procedures
-    CalculateAverage
-    SortData
-    CopyData
-    
-    ' ... Call more procedures or functions here ...
-    
-    MsgBox "All tasks completed!"
-End Sub
-
-function downloadFileFromHyperlink() {
-  var sender = "rakesh@example.com"; // Replace with the sender's email address
-  var threads = GmailApp.search('from:' + sender + ' is:unread');
+  for (var i = 0; i < senders.length; i++) {
+    var sender = senders[i];
+    var senderThreads = GmailApp.search('from:' + sender + ' is:unread subject:' + subjectKeyword);
+    threads = threads.concat(senderThreads);
+  }
 
   for (var i = 0; i < threads.length; i++) {
     var messages = threads[i].getMessages();
 
     for (var j = 0; j < messages.length; j++) {
-      var email = messages[j];
-      var attachments = email.getAttachments();
+      var attachments = messages[j].getAttachments();
 
-      if (attachments.length === 0) {
-        // If there are no attachments, parse the email body for hyperlinks
-        var body = email.getBody();
-        var urls = extractUrlsFromBody(body);
+      if (attachments.length > 0) {
+        for (var k = 0; k < attachments.length; k++) {
+          var attachment = attachments[k];
+          var attachmentName = attachment.getName();
+          var attachmentData = attachment.copyBlob();
 
-        for (var k = 0; k < urls.length; k++) {
-          var url = urls[k];
-          downloadFileFromUrl(url);
+          var blob = Utilities.newBlob(attachmentData.getBytes(), attachmentData.getContentType(), attachmentName);
+          DriveApp.createFile(blob);
         }
       }
 
-      // Mark the email as read
-      email.markRead();
+      messages[j].markRead();
     }
   }
 }
@@ -119,7 +38,6 @@ function extractUrlsFromBody(body) {
 
   if (matches) {
     urls = matches.filter(function (url) {
-      // Add any additional filtering if needed
       return true;
     });
   }
@@ -128,15 +46,49 @@ function extractUrlsFromBody(body) {
 }
 
 function downloadFileFromUrl(url) {
-  var response = UrlFetchApp.fetch(url);
-  var fileBlob = response.getBlob();
+  try {
+    var options = {
+      followRedirects: true,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      }
+    };
 
-  // Modify the filename as needed, or get it from the response headers
-  var fileName = "downloaded_file.txt";
+    var response = UrlFetchApp.fetch(url, options);
 
-  // Save the downloaded file to Google Drive
-  var folder = DriveApp.getRootFolder(); // Change to your desired folder
-  folder.createFile(fileBlob.setName(fileName));
+    if (response.getResponseCode() === 200) {
+      var fileBlob = response.getBlob();
 
-  Logger.log("Downloaded file from URL: " + url);
+      var fileName = getFileNameFromHeaders(response);
+
+      if (fileName === null) {
+        fileName = "downloaded_file.pdf";
+      }
+
+      var folder = DriveApp.getRootFolder();
+      folder.createFile(fileBlob.setName(fileName));
+    } else {
+      Logger.log("Failed to download file from URL: " + url + " - Response code: " + response.getResponseCode());
+    }
+  } catch (error) {
+    Logger.log("Error while downloading file from URL: " + url + " - " + error.toString());
+  }
+}
+
+function getFileNameFromHeaders(response) {
+  var headers = response.getAllHeaders();
+  var contentDisposition = headers["Content-Disposition"];
+
+  if (contentDisposition && contentDisposition.indexOf("filename=") !== -1) {
+    var startIndex = contentDisposition.indexOf("filename=") + 9;
+    var endIndex = contentDisposition.indexOf(";", startIndex);
+
+    if (endIndex === -1) {
+      endIndex = contentDisposition.length;
+    }
+
+    return contentDisposition.substring(startIndex, endIndex);
+  }
+
+  return null;
 }
