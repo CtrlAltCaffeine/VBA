@@ -1,3 +1,50 @@
+function downloadAttachmentsFromSendersWithSubject() {
+  var senders = ["rakesh@example.com", "john@example.com", "mary@example.com"];
+  var subjectKeyword = "test";
+  var threads = [];
+
+  for (var i = 0; i < senders.length; i++) {
+    var sender = senders[i];
+    var senderThreads = GmailApp.search('from:' + sender + ' is:unread subject:' + subjectKeyword);
+    threads = threads.concat(senderThreads);
+  }
+
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+
+    for (var j = 0; j < messages.length; j++) {
+      var email = messages[j];
+      var attachments = email.getAttachments();
+
+      if (attachments.length === 0) {
+        var body = email.getBody();
+        var urls = extractUrlsFromBody(body);
+
+        for (var k = 0; k < urls.length; k++) {
+          var url = urls[k];
+          downloadFileFromUrl(url);
+        }
+      }
+
+      email.markRead();
+    }
+  }
+}
+
+function extractUrlsFromBody(body) {
+  var urls = [];
+  var regex = /https?:\/\/[^\s]+/g;
+  var matches = body.match(regex);
+
+  if (matches) {
+    urls = matches.filter(function (url) {
+      return true;
+    });
+  }
+
+  return urls;
+}
+
 function downloadFileFromUrl(url) {
   try {
     var options = {
@@ -12,10 +59,8 @@ function downloadFileFromUrl(url) {
     if (response.getResponseCode() === 200) {
       var fileBlob = response.getBlob();
       var contentType = response.getHeaders()["Content-Type"];
-
       var extension = getExtensionFromContentType(contentType);
 
-      // If the content type is not recognized or the extension is empty, use a default extension
       if (!extension) {
         extension = "dat";
       }
@@ -37,7 +82,6 @@ function getExtensionFromContentType(contentType) {
     "application/pdf": "pdf",
     "image/jpeg": "jpg",
     "image/png": "png",
-    // Add more content type mappings here as needed
   };
 
   return contentTypeMappings[contentType] || "";
