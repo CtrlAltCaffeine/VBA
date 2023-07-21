@@ -88,3 +88,28 @@ function getExtensionFromContentType(contentType) {
 
   return contentTypeMappings[contentType] || "";
 }
+
+function downloadFileFromUrl(url) {
+  try {
+    var options = {
+      followRedirects: true,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      }
+    };
+
+    var response = UrlFetchApp.fetch(url, options);
+
+    Logger.log("Fetched URL: " + url);
+
+    if (response.getResponseCode() === 200) {
+      // No need to download the file for now
+      // We will only print the fetched URL
+    } else {
+      Logger.log("Failed to fetch URL: " + url + " - Response code: " + response.getResponseCode());
+    }
+  } catch (error) {
+    Logger.log("Error while fetching URL: " + url + " - " + error.toString());
+  }
+}
+
