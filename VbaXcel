@@ -21,7 +21,11 @@ function downloadAttachmentsFromSendersWithSubject() {
           var attachmentName = attachment.getName();
           var attachmentData = attachment.copyBlob();
 
-          var blob = Utilities.newBlob(attachmentData.getBytes(), attachmentData.getContentType(), attachmentName);
+          var contentType = attachment.getContentType();
+          var fileExtension = getExtensionFromContentType(contentType);
+          var fileName = attachmentName + fileExtension;
+
+          var blob = Utilities.newBlob(attachmentData.getBytes(), contentType, fileName);
           DriveApp.createFile(blob);
         }
       }
@@ -31,64 +35,13 @@ function downloadAttachmentsFromSendersWithSubject() {
   }
 }
 
-function extractUrlsFromBody(body) {
-  var urls = [];
-  var regex = /https?:\/\/[^\s]+/g;
-  var matches = body.match(regex);
+function getExtensionFromContentType(contentType) {
+  var mimeToExtMap = {
+    "application/pdf": ".pdf",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    // Add more mime types and corresponding extensions as needed
+  };
 
-  if (matches) {
-    urls = matches.filter(function (url) {
-      return true;
-    });
-  }
-
-  return urls;
-}
-
-function downloadFileFromUrl(url) {
-  try {
-    var options = {
-      followRedirects: true,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-      }
-    };
-
-    var response = UrlFetchApp.fetch(url, options);
-
-    if (response.getResponseCode() === 200) {
-      var fileBlob = response.getBlob();
-
-      var fileName = getFileNameFromHeaders(response);
-
-      if (fileName === null) {
-        fileName = "downloaded_file.pdf";
-      }
-
-      var folder = DriveApp.getRootFolder();
-      folder.createFile(fileBlob.setName(fileName));
-    } else {
-      Logger.log("Failed to download file from URL: " + url + " - Response code: " + response.getResponseCode());
-    }
-  } catch (error) {
-    Logger.log("Error while downloading file from URL: " + url + " - " + error.toString());
-  }
-}
-
-function getFileNameFromHeaders(response) {
-  var headers = response.getAllHeaders();
-  var contentDisposition = headers["Content-Disposition"];
-
-  if (contentDisposition && contentDisposition.indexOf("filename=") !== -1) {
-    var startIndex = contentDisposition.indexOf("filename=") + 9;
-    var endIndex = contentDisposition.indexOf(";", startIndex);
-
-    if (endIndex === -1) {
-      endIndex = contentDisposition.length;
-    }
-
-    return contentDisposition.substring(startIndex, endIndex);
-  }
-
-  return null;
+  return mimeToExtMap[contentType] || ".dat"; // Default extension if not found in the map
 }
