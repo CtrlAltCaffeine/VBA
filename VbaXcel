@@ -1,22 +1,28 @@
-function downloadFileFromEmail() {
-  // Get all unread messages.
-  var messages = GmailApp.getUnreadMessages();
+function downloadFileFromURL(url) {
+  var response = UrlFetchApp.fetch(url);
+  var content = response.getContent();
+  var fileName = getFileNameFromURL(url); // Function to extract the file name from the URL
+  var contentType = response.getHeaders()['Content-Type'];
 
-  // Loop through the messages and search for HTML links.
-  for (var i = 0; i < messages.length; i++) {
-    var message = messages[i];
-    var body = message.getBody();
-    var links = body.match(/<a href="(.*?)"/g);
+  var blob = Utilities.newBlob(content, contentType, fileName);
 
-    // If a link is found, download the file.
-    if (links != null) {
-      for (var j = 0; j < links.length; j++) {
-        var link = links[j];
-        var fileName = link.substring(link.lastIndexOf("/") + 1);
-        var file = Utilities.newBlob(link);
-        var attachment = DriveApp.createFile(file);
-        attachment.setName(fileName);
-      }
-    }
+  // Prompt the user to save the file
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('File Download', 'Enter the desired file name:', ui.ButtonSet.OK_CANCEL);
+
+  if (response.getSelectedButton() == ui.Button.OK) {
+    var desiredFileName = response.getResponseText();
+    blob.setName(desiredFileName);
+    var folder = DriveApp.getRootFolder(); // Change to the desired folder if you want to save it to a specific folder
+    var file = folder.createFile(blob);
+    Logger.log('File "' + desiredFileName + '" downloaded successfully.');
+  } else {
+    Logger.log('Download canceled.');
   }
+}
+
+// Function to extract the file name from the URL
+function getFileNameFromURL(url) {
+  var parts = url.split("/");
+  return parts[parts.length - 1];
 }
