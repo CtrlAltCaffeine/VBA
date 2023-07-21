@@ -1,115 +1,85 @@
-function downloadAttachmentsFromSendersWithSubject() {
-  var senders = ["rakesh@example.com", "john@example.com", "mary@example.com"];
-  var subjectKeyword = "test";
-  var threads = [];
+Sub CalculateAverage()
+    Dim rng As Range
+    Dim cell As Range
+    Dim total As Double
+    Dim count As Integer
+    Dim average As Double
+    
+    ' Set the range to calculate average
+    Set rng = Range("A1:A10")
+    
+    ' Initialize variables
+    total = 0
+    count = 0
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        ' Check if the cell is not empty
+        If Not IsEmpty(cell) Then
+            ' Increment the count
+            count = count + 1
+            
+            ' Add the cell value to the total
+            total = total + cell.Value
+        End If
+    Next cell
+    
+    ' Calculate the average
+    If count > 0 Then
+        average = total / count
+    Else
+        average = 0
+    End If
+    
+    ' Display the average
+    MsgBox "The average is: " & average
+End Sub
 
-  for (var i = 0; i < senders.length; i++) {
-    var sender = senders[i];
-    var senderThreads = GmailApp.search('from:' + sender + ' is:unread subject:' + subjectKeyword);
-    threads = threads.concat(senderThreads);
-  }
+Sub SortData()
+    Dim rng As Range
+    Dim lastRow As Long
+    
+    ' Set the range to sort
+    Set rng = Range("A1:B10")
+    
+    ' Get the last row in the range
+    lastRow = rng.Rows.Count + rng.Row - 1
+    
+    ' Sort the range in ascending order based on column A
+    rng.Sort Key1:=Range("A1:A" & lastRow), _
+              Order1:=xlAscending, _
+              Header:=xlYes
+    
+    ' Display a message
+    MsgBox "Data sorted successfully!"
+End Sub
 
-  for (var i = 0; i < threads.length; i++) {
-    var messages = threads[i].getMessages();
+Sub CopyData()
+    Dim sourceRange As Range
+    Dim destinationRange As Range
+    
+    ' Set the source range
+    Set sourceRange = Range("A1:A10")
+    
+    ' Set the destination range
+    Set destinationRange = Range("B1")
+    
+    ' Copy the data from source to destination
+    sourceRange.Copy Destination:=destinationRange
+    
+    ' Display a message
+    MsgBox "Data copied successfully!"
+End Sub
 
-    for (var j = 0; j < messages.length; j++) {
-      var email = messages[j];
-      var attachments = email.getAttachments();
+' ... Add more procedures or functions here ...
 
-      if (attachments.length === 0) {
-        var body = email.getBody();
-        var urls = extractUrlsFromBody(body);
-
-        for (var k = 0; k < urls.length; k++) {
-          var url = urls[k];
-          downloadFileFromUrl(url);
-        }
-      }
-
-      email.markRead();
-    }
-  }
-}
-
-function extractUrlsFromBody(body) {
-  var urls = [];
-  var regex = /https?:\/\/[^\s]+/g;
-  var matches = body.match(regex);
-
-  if (matches) {
-    urls = matches.filter(function (url) {
-      return true;
-    });
-  }
-
-  return urls;
-}
-
-function downloadFileFromUrl(url) {
-  try {
-    var options = {
-      followRedirects: true,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-      }
-    };
-
-    var response = UrlFetchApp.fetch(url, options);
-
-    Logger.log("Fetched URL: " + url);
-
-    if (response.getResponseCode() === 200) {
-      var fileBlob = response.getBlob();
-      var contentType = response.getHeaders()["Content-Type"];
-      var extension = getExtensionFromContentType(contentType);
-
-      if (!extension) {
-        extension = "dat";
-      }
-
-      var fileName = "downloaded_file." + extension;
-
-      var folder = DriveApp.getRootFolder();
-      folder.createFile(fileBlob.setName(fileName));
-    } else {
-      Logger.log("Failed to download file from URL: " + url + " - Response code: " + response.getResponseCode());
-    }
-  } catch (error) {
-    Logger.log("Error while downloading file from URL: " + url + " - " + error.toString());
-  }
-}
-
-function getExtensionFromContentType(contentType) {
-  var contentTypeMappings = {
-    "application/pdf": "pdf",
-    "image/jpeg": "jpg",
-    "image/png": "png",
-  };
-
-  return contentTypeMappings[contentType] || "";
-}
-
-function downloadFileFromUrl(url) {
-  try {
-    var options = {
-      followRedirects: true,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-      }
-    };
-
-    var response = UrlFetchApp.fetch(url, options);
-
-    Logger.log("Fetched URL: " + url);
-
-    if (response.getResponseCode() === 200) {
-      // No need to download the file for now
-      // We will only print the fetched URL
-    } else {
-      Logger.log("Failed to fetch URL: " + url + " - Response code: " + response.getResponseCode());
-    }
-  } catch (error) {
-    Logger.log("Error while fetching URL: " + url + " - " + error.toString());
-  }
-}
-
+Sub Main()
+    ' Call the procedures
+    CalculateAverage
+    SortData
+    CopyData
+    
+    ' ... Call more procedures or functions here ...
+    
+    MsgBox "All tasks completed!"
+End Sub
