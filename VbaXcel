@@ -56,6 +56,8 @@ function downloadFileFromUrl(url) {
 
     var response = UrlFetchApp.fetch(url, options);
 
+    Logger.log("Fetched URL: " + url);
+
     if (response.getResponseCode() === 200) {
       var fileBlob = response.getBlob();
       var contentType = response.getHeaders()["Content-Type"];
