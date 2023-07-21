@@ -1,47 +1,44 @@
-function downloadAttachmentsFromSendersWithSubject() {
-  var senders = ["rakesh@example.com", "john@example.com", "mary@example.com"];
-  var subjectKeyword = "test";
-  var threads = [];
+function downloadFileFromUrl(url) {
+  try {
+    var options = {
+      followRedirects: true,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      }
+    };
 
-  for (var i = 0; i < senders.length; i++) {
-    var sender = senders[i];
-    var senderThreads = GmailApp.search('from:' + sender + ' is:unread subject:' + subjectKeyword);
-    threads = threads.concat(senderThreads);
-  }
+    var response = UrlFetchApp.fetch(url, options);
 
-  for (var i = 0; i < threads.length; i++) {
-    var messages = threads[i].getMessages();
+    if (response.getResponseCode() === 200) {
+      var fileBlob = response.getBlob();
+      var contentType = response.getHeaders()["Content-Type"];
 
-    for (var j = 0; j < messages.length; j++) {
-      var attachments = messages[j].getAttachments();
+      var extension = getExtensionFromContentType(contentType);
 
-      if (attachments.length > 0) {
-        for (var k = 0; k < attachments.length; k++) {
-          var attachment = attachments[k];
-          var attachmentName = attachment.getName();
-          var attachmentData = attachment.copyBlob();
-
-          var contentType = attachment.getContentType();
-          var fileExtension = getExtensionFromContentType(contentType);
-          var fileName = attachmentName + fileExtension;
-
-          var blob = Utilities.newBlob(attachmentData.getBytes(), contentType, fileName);
-          DriveApp.createFile(blob);
-        }
+      // If the content type is not recognized or the extension is empty, use a default extension
+      if (!extension) {
+        extension = "dat";
       }
 
-      messages[j].markRead();
+      var fileName = "downloaded_file." + extension;
+
+      var folder = DriveApp.getRootFolder();
+      folder.createFile(fileBlob.setName(fileName));
+    } else {
+      Logger.log("Failed to download file from URL: " + url + " - Response code: " + response.getResponseCode());
     }
+  } catch (error) {
+    Logger.log("Error while downloading file from URL: " + url + " - " + error.toString());
   }
 }
 
 function getExtensionFromContentType(contentType) {
-  var mimeToExtMap = {
-    "application/pdf": ".pdf",
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    // Add more mime types and corresponding extensions as needed
+  var contentTypeMappings = {
+    "application/pdf": "pdf",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    // Add more content type mappings here as needed
   };
 
-  return mimeToExtMap[contentType] || ".dat"; // Default extension if not found in the map
+  return contentTypeMappings[contentType] || "";
 }
