@@ -1,8 +1,6 @@
-import numpy as np
-
 def generate_exponential_numbers(start, end, Z):
-    # Generate Z exponential numbers between start and end
-    exponential_numbers = np.logspace(np.log10(start), np.log10(end), Z)
+    ratio = (end / start) ** (1 / (Z - 1))
+    exponential_numbers = [start * (ratio ** i) for i in range(Z)]
     return exponential_numbers
 
 if __name__ == "__main__":
