@@ -1,9 +1,7 @@
 import streamlit as st
 
-# Define the main app
 def main():
     st.title("Home")
-    st.write("Please select your user type:")
     user_type = st.selectbox("", ["Select", "Viewer", "Authenticator"])
     
     if user_type == "Viewer":
@@ -11,17 +9,20 @@ def main():
     elif user_type == "Authenticator":
         st.session_state.user_type = "Authenticator"
 
-# Define the viewer page
 def viewer_page():
     st.title("Viewer Page")
-    # Add your components for the viewer page here
+    st.write("""
+    The Taj Mahal is an ivory-white marble mausoleum on the right bank of the Yamuna river in the Indian city of Agra.
+    It was commissioned in 1632 by the Mughal emperor Shah Jahan to house the tomb of his favourite wife, Mumtaz Mahal.
+    """)
 
-# Define the authenticator page
 def authenticator_page():
     st.title("Authenticator Page")
-    # Add your components for the authenticator page here
+    st.write("""
+    The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France.
+    It is named after the engineer Gustave Eiffel, whose company designed and built the tower.
+    """)
 
-# Define the app routing
 def app():
     pages = {
         "Home": main,
@@ -32,7 +33,6 @@ def app():
     if 'user_type' not in st.session_state:
         st.session_state.user_type = 'Home'
 
-    # Display the selected page with the session_state
     pages[st.session_state.user_type]()
 
 if __name__ == "__main__":
