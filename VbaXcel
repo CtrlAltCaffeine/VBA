@@ -6,9 +6,9 @@ def main():
     
     if st.button('Submit'):
         if user_type == "Viewer":
-            st.experimental_set_query_params(url="Viewer")
+            st.session_state.user_type = "Viewer"
         elif user_type == "Authenticator":
-            st.experimental_set_query_params(url="Authenticator")
+            st.session_state.user_type = "Authenticator"
         else:
             st.warning('Please select a user type!')
 
@@ -27,14 +27,19 @@ def authenticator_page():
     """)
 
 def app():
-    url_path = st.experimental_get_query_params().get('url', ['Home'])[0]
+    if 'user_type' not in st.session_state:
+        st.session_state.user_type = 'Home'
 
-    if url_path == 'Home':
+    url_path = st.experimental_get_query_params().get('url', [''])[0]
+    if url_path:
+        st.session_state.user_type = url_path
+
+    if st.session_state.user_type == 'Home':
         main()
-    elif url_path == 'Viewer':
+    elif st.session_state.user_type == 'Viewer':
         st.subheader("Viewer")
         viewer_page()
-    elif url_path == 'Authenticator':
+    elif st.session_state.user_type == 'Authenticator':
         st.subheader("Authenticator")
         authenticator_page()
 
