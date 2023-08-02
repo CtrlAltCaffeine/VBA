@@ -2,12 +2,15 @@ import streamlit as st
 
 def main():
     st.title("Home")
-    user_type = st.selectbox("", ["Select", "Viewer", "Authenticator"])
+    user_type = st.selectbox("Select User Type", ["Select", "Viewer", "Authenticator"], label_visibility="off")
     
-    if user_type == "Viewer":
-        st.session_state.user_type = "Viewer"
-    elif user_type == "Authenticator":
-        st.session_state.user_type = "Authenticator"
+    if st.button('Submit'):
+        if user_type == "Viewer":
+            st.session_state.user_type = "Viewer"
+        elif user_type == "Authenticator":
+            st.session_state.user_type = "Authenticator"
+        else:
+            st.warning('Please select a user type!')
 
 def viewer_page():
     st.title("Viewer Page")
