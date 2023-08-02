@@ -1,42 +1,85 @@
-import streamlit as st
-
-def main():
-    st.title("Home")
-    user_type = st.selectbox("Select User Type", ["Select", "Viewer", "Authenticator"], label_visibility="off")
+Sub CalculateAverage()
+    Dim rng As Range
+    Dim cell As Range
+    Dim total As Double
+    Dim count As Integer
+    Dim average As Double
     
-    if st.button('Submit'):
-        if user_type == "Viewer":
-            st.session_state.user_type = "Viewer"
-        elif user_type == "Authenticator":
-            st.session_state.user_type = "Authenticator"
-        else:
-            st.warning('Please select a user type!')
+    ' Set the range to calculate average
+    Set rng = Range("A1:A10")
+    
+    ' Initialize variables
+    total = 0
+    count = 0
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        ' Check if the cell is not empty
+        If Not IsEmpty(cell) Then
+            ' Increment the count
+            count = count + 1
+            
+            ' Add the cell value to the total
+            total = total + cell.Value
+        End If
+    Next cell
+    
+    ' Calculate the average
+    If count > 0 Then
+        average = total / count
+    Else
+        average = 0
+    End If
+    
+    ' Display the average
+    MsgBox "The average is: " & average
+End Sub
 
-def viewer_page():
-    st.title("Viewer Page")
-    st.write("""
-    The Taj Mahal is an ivory-white marble mausoleum on the right bank of the Yamuna river in the Indian city of Agra.
-    It was commissioned in 1632 by the Mughal emperor Shah Jahan to house the tomb of his favourite wife, Mumtaz Mahal.
-    """)
+Sub SortData()
+    Dim rng As Range
+    Dim lastRow As Long
+    
+    ' Set the range to sort
+    Set rng = Range("A1:B10")
+    
+    ' Get the last row in the range
+    lastRow = rng.Rows.Count + rng.Row - 1
+    
+    ' Sort the range in ascending order based on column A
+    rng.Sort Key1:=Range("A1:A" & lastRow), _
+              Order1:=xlAscending, _
+              Header:=xlYes
+    
+    ' Display a message
+    MsgBox "Data sorted successfully!"
+End Sub
 
-def authenticator_page():
-    st.title("Authenticator Page")
-    st.write("""
-    The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France.
-    It is named after the engineer Gustave Eiffel, whose company designed and built the tower.
-    """)
+Sub CopyData()
+    Dim sourceRange As Range
+    Dim destinationRange As Range
+    
+    ' Set the source range
+    Set sourceRange = Range("A1:A10")
+    
+    ' Set the destination range
+    Set destinationRange = Range("B1")
+    
+    ' Copy the data from source to destination
+    sourceRange.Copy Destination:=destinationRange
+    
+    ' Display a message
+    MsgBox "Data copied successfully!"
+End Sub
 
-def app():
-    pages = {
-        "Home": main,
-        "Viewer": viewer_page,
-        "Authenticator": authenticator_page,
-    }
+' ... Add more procedures or functions here ...
 
-    if 'user_type' not in st.session_state:
-        st.session_state.user_type = 'Home'
-
-    pages[st.session_state.user_type]()
-
-if __name__ == "__main__":
-    app()
+Sub Main()
+    ' Call the procedures
+    CalculateAverage
+    SortData
+    CopyData
+    
+    ' ... Call more procedures or functions here ...
+    
+    MsgBox "All tasks completed!"
+End Sub
