@@ -6,10 +6,10 @@ def main():
     
     if sol.button('Submit'):
         if user_type == "Viewer":
-            sol.session_state.user_type = "Viewer"
+            sol.session['user_type'] = "Viewer"
             sol.rerun()
         elif user_type == "Authenticator":
-            sol.session_state.user_type = "Authenticator"
+            sol.session['user_type'] = "Authenticator"
             sol.rerun()
         else:
             sol.warning('Please select a user type!')
@@ -35,10 +35,10 @@ def app():
         "Authenticator": authenticator_page,
     }
 
-    if 'user_type' not in sol.session_state:
-        sol.session_state.user_type = 'Home'
+    if 'user_type' not in sol.session:
+        sol.session['user_type'] = 'Home'
 
-    pages[sol.session_state.user_type]()
+    pages[sol.session['user_type']]()
 
 if __name__ == "__main__":
     app()
