@@ -1,17 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Landmark Description</title>
-</head>
-<body>
-    <h1>Choose a landmark:</h1>
-    <form method="POST" action="{{ url_for('result') }}">
-        <select name="landmark">
-            <option value="taj_mahal">Taj Mahal</option>
-            <option value="eiffel_tower">Eiffel Tower</option>
-        </select>
-        <br>
-        <input type="submit" value="Submit">
-    </form>
-</body>
-</html>
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/result', methods=['POST'])
+def result():
+    choice = request.form['landmark']
+
+    if choice == 'taj_mahal':
+        description = "The Taj Mahal is an iconic white marble mausoleum located in Agra, India."
+
+    elif choice == 'eiffel_tower':
+        description = "The Eiffel Tower is a wrought-iron lattice tower located in Paris, France."
+
+    else:
+        description = "Invalid selection."
+
+    return render_template('result.html', description=description)
