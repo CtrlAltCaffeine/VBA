@@ -83,3 +83,5 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+
+=IF(AND(R1>=V1, R1<=W1), "in BBG range", IF(AND(R1>=Y1, R1<=Z1), "in RT range", "check again"))
