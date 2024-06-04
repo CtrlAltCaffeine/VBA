@@ -85,3 +85,50 @@ Sub Main()
 End Sub
 
 =IF(AND(R1>=V1, R1<=W1), "in BBG range", IF(AND(R1>=Y1, R1<=Z1), "in RT range", "check again"))
+import ctypes
+
+import time
+
+
+
+# Constants for mouse event types
+
+MOUSEEVENTF_MOVE = 0x0001
+
+
+
+# Set the interval (in seconds) for moving the mouse cursor
+
+interval_seconds = 2
+
+
+
+# Define the mouse_event function
+
+def move_mouse():
+
+    ctypes.windll.user32.mouse_event(MOUSEEVENTF_MOVE, 1, 0, 0, 0)
+
+    ctypes.windll.user32.mouse_event(MOUSEEVENTF_MOVE, -1, 0, 0, 0)
+
+
+
+try:
+
+    while True:
+
+        # Move the mouse cursor to prevent the screen saver
+
+        move_mouse()
+
+
+
+        # Wait for the specified interval
+
+        time.sleep(interval_seconds)
+
+except KeyboardInterrupt:
+
+    # If the user interrupts the script (e.g., by pressing Ctrl+C), exit gracefully
+
+    pass
