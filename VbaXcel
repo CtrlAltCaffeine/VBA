@@ -91,52 +91,18 @@ function createPivotTable() {
   var sheet = spreadsheet.getSheetByName(sheetName);
   var range = sheet.getRange('A1:L36057');
   var pivotTableRange = sheet.getRange('N1');
+  
+  var pivotTable = pivotTableRange.createPivotTable(range);
 
-  const pivotTable = pivotTableRange.createPivotTable(range);
+  // Define rows, columns, and values by their respective headers
+  pivotTable.addRowGroup(2); // 'Year Month' is in the second column
+  pivotTable.addColumnGroup(8); // 'TenorBuckets (SOFR)' is in the eighth column
+  pivotTable.addPivotValue(10, SpreadsheetApp.PivotTableSummarizeFunction.SUM); // 'USDE Volume' is in the tenth column
 
-  const request = {
-    updateCells: {
-      rows: [{
-        values: [{
-          pivotTable: {
-            source: {
-              sheetId: sheet.getSheetId(),
-              startRowIndex: 0,
-              startColumnIndex: 0,
-              endRowIndex: sheet.getLastRow(),
-              endColumnIndex: sheet.getLastColumn()
-            },
-            rows: [{
-              sourceColumnOffset: 1,
-              showTotals: true,
-              sortOrder: 'ASCENDING'
-            }],
-            columns: [{
-              sourceColumnOffset: 7,
-              showTotals: true,
-              sortOrder: 'ASCENDING'
-            }],
-            values: [{
-              summarizeFunction: 'SUM',
-              sourceColumnOffset: 9
-            }],
-            valueLayout: 'HORIZONTAL'
-          }
-        }]
-      }],
-      start: {
-        sheetId: sheet.getSheetId(),
-        rowIndex: 0,
-        columnIndex: 13
-      },
-      fields: 'pivotTable'
-    }
-  };
-
-  Sheets.Spreadsheets.batchUpdate({
-    requests: [request]
-  }, spreadsheetId);
+  sheet.getRange('N1').setValue('Pivot Table');
 }
+
+
 
 
 
