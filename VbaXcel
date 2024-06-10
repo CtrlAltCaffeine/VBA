@@ -94,9 +94,13 @@ function createPivotTable() {
   
   var pivotTable = pivotTableRange.createPivotTable(range);
 
-  pivotTable.addRowGroup(sheet.getRange("A1:L1").getCell(1, 2).getValue());
-  pivotTable.addColumnGroup(sheet.getRange("A1:L1").getCell(1, 10).getValue());
-  pivotTable.addPivotValue(sheet.getRange("A1:L1").getCell(1, 11).getValue(), SpreadsheetApp.PivotTableSummarizeFunction.SUM);
+  var rowField = 'Year Month';
+  var columnField = 'TenorBuckets (SOFR)';
+  var valueField = 'USDE Volume';
+  
+  pivotTable.addRowGroup(rowField);
+  pivotTable.addColumnGroup(columnField);
+  pivotTable.addPivotValue(valueField, SpreadsheetApp.PivotTableSummarizeFunction.SUM);
 
   sheet.getRange('N1').setValue('Pivot Table');
 }
