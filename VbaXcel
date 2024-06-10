@@ -83,3 +83,23 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+function createPivotTable() {
+  var spreadsheetId = 'abcd'; // Your spreadsheet ID
+  var sheetName = 'Data'; // Your sheet name
+  
+  var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  var sheet = spreadsheet.getSheetByName(sheetName);
+  var range = sheet.getDataRange();
+  var pivotTableRange = sheet.getRange('N1'); // Adjust the cell reference as needed
+  
+  var pivotTable = pivotTableRange.createPivotTable(range);
+
+  pivotTable.addRowGroup('Year Month'); // Adding by field name
+  pivotTable.addColumnGroup('TenorBuckets (SOFR)'); // Adding by field name
+  pivotTable.addPivotValue('USDE Volume', SpreadsheetApp.PivotTableSummarizeFunction.SUM); // Adding by field name
+
+  sheet.getRange('N1').setValue('Pivot Table');
+  var headerRange = sheet.getRange('N2:P2'); // Adjust the range based on your pivot table size
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#cfe2f3');
+}
