@@ -94,13 +94,50 @@ function createPivotTable() {
 
   const pivotTable = pivotTableRange.createPivotTable(range);
 
-  // Define rows, columns, and values by their respective headers
-  pivotTable.addRowGroup('Year Month');
-  pivotTable.addColumnGroup('TenorBuckets (SOFR)');
-  pivotTable.addPivotValue('USDE Volume', SpreadsheetApp.PivotTableSummarizeFunction.SUM);
+  const request = {
+    updateCells: {
+      rows: [{
+        values: [{
+          pivotTable: {
+            source: {
+              sheetId: sheet.getSheetId(),
+              startRowIndex: 0,
+              startColumnIndex: 0,
+              endRowIndex: sheet.getLastRow(),
+              endColumnIndex: sheet.getLastColumn()
+            },
+            rows: [{
+              sourceColumnOffset: 1,
+              showTotals: true,
+              sortOrder: 'ASCENDING'
+            }],
+            columns: [{
+              sourceColumnOffset: 7,
+              showTotals: true,
+              sortOrder: 'ASCENDING'
+            }],
+            values: [{
+              summarizeFunction: 'SUM',
+              sourceColumnOffset: 9
+            }],
+            valueLayout: 'HORIZONTAL'
+          }
+        }]
+      }],
+      start: {
+        sheetId: sheet.getSheetId(),
+        rowIndex: 0,
+        columnIndex: 13
+      },
+      fields: 'pivotTable'
+    }
+  };
 
-  sheet.getRange('N1').setValue('Pivot Table');
+  Sheets.Spreadsheets.batchUpdate({
+    requests: [request]
+  }, spreadsheetId);
 }
+
 
 
 
