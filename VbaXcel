@@ -91,13 +91,16 @@ function createPivotTable() {
   var sheet = spreadsheet.getSheetByName(sheetName);
   var range = sheet.getRange('A1:L36057');
   var pivotTableRange = sheet.getRange('N1');
-  
-  var pivotTable = pivotTableRange.createPivotTable(range);
 
-  pivotTable.addRowGroup(sheet.getRange('B1').getValue()); // 'Year Month'
-  pivotTable.addColumnGroup(sheet.getRange('H1').getValue()); // 'TenorBuckets (SOFR)'
-  pivotTable.addPivotValue(sheet.getRange('J1').getValue(), SpreadsheetApp.PivotTableSummarizeFunction.SUM); // 'USDE Volume'
+  const pivotTable = pivotTableRange.createPivotTable(range);
+
+  // Define rows, columns, and values by their respective headers
+  pivotTable.addRowGroup('Year Month');
+  pivotTable.addColumnGroup('TenorBuckets (SOFR)');
+  pivotTable.addPivotValue('USDE Volume', SpreadsheetApp.PivotTableSummarizeFunction.SUM);
 
   sheet.getRange('N1').setValue('Pivot Table');
 }
+
+
 
