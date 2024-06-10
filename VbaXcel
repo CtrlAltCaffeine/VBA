@@ -83,4 +83,19 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+function createPivotTable() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var range = sheet.getDataRange();
+  var pivotTableRange = sheet.getRange('E1');
+  
+  var pivotTable = pivotTableRange.createPivotTable(range);
 
+  pivotTable.addRowGroup(1);
+  pivotTable.addColumnGroup(2);
+  pivotTable.addPivotValue(3, SpreadsheetApp.PivotTableSummarizeFunction.SUM);
+
+  sheet.getRange('E1').setValue('Pivot Table');
+  var headerRange = sheet.getRange('E2:G2');
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#cfe2f3');
+}
