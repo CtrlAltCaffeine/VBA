@@ -177,5 +177,42 @@ function downPivot() {
   }
 }
 
+function sidePivot() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  
+  // Get values from column J (starting from J9) and column B (starting from B90) and corresponding OI values in column C (starting from C90)
+  var dateColumnJ = sheet.getRange("J9:J").getValues();
+  var dateColumnB = sheet.getRange("B90:B").getValues();
+  var valueColumnC = sheet.getRange("C90:C").getValues();
+
+  var options = { year: '2-digit', month: 'short' };
+
+  // Loop through the dates in column J
+  for (var i = 0; i < dateColumnJ.length; i++) {
+    var dateJ = dateColumnJ[i][0];
+    if (!dateJ) break; // Exit loop if an empty cell is found in column J
+
+    // Format date in J column to MMM-yy
+    var formattedDateJ = Utilities.formatDate(new Date(dateJ), Session.getScriptTimeZone(), "MMM-yy");
+
+    // Loop through the dates in column B
+    for (var j = 0; j < dateColumnB.length; j++) {
+      var cellValueB = dateColumnB[j][0].toString();
+      if (cellValueB) {
+        var year = cellValueB.substring(0, 4);
+        var month = cellValueB.substring(4, 6);
+        var dateB = new Date(year, month - 1); // Month is 0-indexed
+        var formattedDateB = Utilities.formatDate(dateB, Session.getScriptTimeZone(), "MMM-yy");
+
+        // If dates match, copy the corresponding value from column C to column L
+        if (formattedDateJ === formattedDateB) {
+          var valueC = valueColumnC[j][0];
+          sheet.getRange(i + 9, 12).setValue(valueC); // L column is the 12th column
+          break;
+        }
+      }
+    }
+  }
+}
 
 
