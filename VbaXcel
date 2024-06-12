@@ -10,9 +10,10 @@ function sidePivot() {
 
   // Function to parse "MMM YY" format to a Date object
   function parseTextToDate(text) {
+    var parts = text.split(' ');
+    var month = parts[0];
+    var year = parts[1];
     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    var month = text.substring(0, 3);
-    var year = text.substring(4, 6);
     var monthIndex = months.indexOf(month);
     if (monthIndex === -1) {
       throw new Error("Invalid month in date string: " + text);
@@ -22,12 +23,11 @@ function sidePivot() {
 
   // Loop through the text dates in column J
   for (var i = 0; i < dateColumnJ.length; i++) {
-    var textDateJ = dateColumnJ[i][0];
-    if (!textDateJ) break; // Exit loop if an empty cell is found in column J
+    var dateJ = dateColumnJ[i][0];
+    if (!dateJ) break; // Exit loop if an empty cell is found in column J
 
-    // Convert text "MMM YY" to Date object
-    var dateJ = parseTextToDate(textDateJ);
-    var formattedDateJ = Utilities.formatDate(dateJ, Session.getScriptTimeZone(), "MMM-yy");
+    // Convert the date object to "MMM YY" text
+    var formattedDateJ = Utilities.formatDate(new Date(dateJ), Session.getScriptTimeZone(), "MMM-yy");
 
     // Loop through the dates in column B
     for (var j = 0; j < dateColumnB.length; j++) {
