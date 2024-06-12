@@ -23,11 +23,12 @@ function sidePivot() {
 
   // Loop through the text dates in column J
   for (var i = 0; i < dateColumnJ.length; i++) {
-    var dateJ = dateColumnJ[i][0];
-    if (!dateJ) break; // Exit loop if an empty cell is found in column J
+    var textDateJ = dateColumnJ[i][0];
+    if (!textDateJ) break; // Exit loop if an empty cell is found in column J
 
-    // Convert the date object to "MMM YY" text
-    var formattedDateJ = Utilities.formatDate(new Date(dateJ), Session.getScriptTimeZone(), "MMM-yy");
+    // Convert text "MMM YY" to Date object
+    var dateJ = parseTextToDate(textDateJ);
+    var formattedDateJ = Utilities.formatDate(dateJ, Session.getScriptTimeZone(), "MMM-yy");
 
     // Loop through the dates in column B
     for (var j = 0; j < dateColumnB.length; j++) {
