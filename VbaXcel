@@ -10,10 +10,14 @@ function sidePivot() {
 
   // Function to parse "MMM YY" format to a Date object
   function parseTextToDate(text) {
-    var parts = text.split(' ');
-    var month = new Date(Date.parse(parts[0] +" 1, 2012")).getMonth();
-    var year = '20' + parts[1]; // Assuming dates are in the format like "Jan 21" for January 2021
-    return new Date(year, month, 1);
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var month = text.substring(0, 3);
+    var year = text.substring(4, 6);
+    var monthIndex = months.indexOf(month);
+    if (monthIndex === -1) {
+      throw new Error("Invalid month in date string: " + text);
+    }
+    return new Date("20" + year, monthIndex, 1);
   }
 
   // Loop through the text dates in column J
