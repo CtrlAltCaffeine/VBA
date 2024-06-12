@@ -1,51 +1,85 @@
-function sidePivot() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  
-  // Get values from column J (starting from J9)
-  var dateColumnJ = sheet.getRange("J9:J").getValues();
+Sub CalculateAverage()
+    Dim rng As Range
+    Dim cell As Range
+    Dim total As Double
+    Dim count As Integer
+    Dim average As Double
+    
+    ' Set the range to calculate average
+    Set rng = Range("A1:A10")
+    
+    ' Initialize variables
+    total = 0
+    count = 0
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        ' Check if the cell is not empty
+        If Not IsEmpty(cell) Then
+            ' Increment the count
+            count = count + 1
+            
+            ' Add the cell value to the total
+            total = total + cell.Value
+        End If
+    Next cell
+    
+    ' Calculate the average
+    If count > 0 Then
+        average = total / count
+    Else
+        average = 0
+    End If
+    
+    ' Display the average
+    MsgBox "The average is: " & average
+End Sub
 
-  // Get values from column B (starting from B90) and corresponding OI values from column C (starting from C90)
-  var dateColumnB = sheet.getRange("B90:B").getValues();
-  var valueColumnC = sheet.getRange("C90:C").getValues();
+Sub SortData()
+    Dim rng As Range
+    Dim lastRow As Long
+    
+    ' Set the range to sort
+    Set rng = Range("A1:B10")
+    
+    ' Get the last row in the range
+    lastRow = rng.Rows.Count + rng.Row - 1
+    
+    ' Sort the range in ascending order based on column A
+    rng.Sort Key1:=Range("A1:A" & lastRow), _
+              Order1:=xlAscending, _
+              Header:=xlYes
+    
+    ' Display a message
+    MsgBox "Data sorted successfully!"
+End Sub
 
-  // Function to parse "MMM YY" format to a Date object
-  function parseTextToDate(text) {
-    var parts = text.split(' ');
-    var month = parts[0];
-    var year = parts[1];
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    var monthIndex = months.indexOf(month);
-    if (monthIndex === -1) {
-      throw new Error("Invalid month in date string: " + text);
-    }
-    return new Date("20" + year, monthIndex, 1);
-  }
+Sub CopyData()
+    Dim sourceRange As Range
+    Dim destinationRange As Range
+    
+    ' Set the source range
+    Set sourceRange = Range("A1:A10")
+    
+    ' Set the destination range
+    Set destinationRange = Range("B1")
+    
+    ' Copy the data from source to destination
+    sourceRange.Copy Destination:=destinationRange
+    
+    ' Display a message
+    MsgBox "Data copied successfully!"
+End Sub
 
-  // Loop through the text dates in column J
-  for (var i = 0; i < dateColumnJ.length; i++) {
-    var textDateJ = dateColumnJ[i][0];
-    if (!textDateJ) break; // Exit loop if an empty cell is found in column J
+' ... Add more procedures or functions here ...
 
-    // Convert text "MMM YY" to Date object
-    var dateJ = parseTextToDate(textDateJ);
-    var formattedDateJ = Utilities.formatDate(dateJ, Session.getScriptTimeZone(), "MMM-yy");
-
-    // Loop through the dates in column B
-    for (var j = 0; j < dateColumnB.length; j++) {
-      var cellValueB = dateColumnB[j][0].toString();
-      if (cellValueB) {
-        var year = cellValueB.substring(0, 4);
-        var month = cellValueB.substring(4, 6);
-        var dateB = new Date(year, month - 1); // Month is 0-indexed
-        var formattedDateB = Utilities.formatDate(dateB, Session.getScriptTimeZone(), "MMM-yy");
-
-        // If dates match, copy the corresponding value from column C to column L
-        if (formattedDateJ === formattedDateB) {
-          var valueC = valueColumnC[j][0];
-          sheet.getRange(i + 9, 12).setValue(valueC); // L column is the 12th column
-          break;
-        }
-      }
-    }
-  }
-}
+Sub Main()
+    ' Call the procedures
+    CalculateAverage
+    SortData
+    CopyData
+    
+    ' ... Call more procedures or functions here ...
+    
+    MsgBox "All tasks completed!"
+End Sub
