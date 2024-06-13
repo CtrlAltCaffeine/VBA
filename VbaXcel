@@ -83,26 +83,4 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
-function createComboChart() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var chart = sheet.newChart()
-      .setChartType(Charts.ChartType.COMBO)
-      .addRange(sheet.getRange('K9:K49')) // Labels
-      .addRange(sheet.getRange('L9:L49')) // Series 1
-      .addRange(sheet.getRange('M9:M49')) // Series 2
-      .setOption('title', 'Combo Chart')
-      .setOption('series', {
-        0: {type: 'bars', targetAxisIndex: 0},
-        1: {type: 'line', targetAxisIndex: 1}
-      })
-      .setOption('hAxis', {
-        title: 'X-Axis'
-      })
-      .setOption('vAxes', {
-        0: {title: 'Series 1'},
-        1: {title: 'Series 2'}
-      })
-      .setPosition(5, 5, 0, 0) // Position the chart on the sheet
-      .build();
-  sheet.insertChart(chart);
-}
+
