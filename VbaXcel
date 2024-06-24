@@ -84,3 +84,76 @@ Sub Main()
     MsgBox "All tasks completed!"
 End Sub
 
+### Training and Learning Tracker
+
+#### Name: Jeevan Jyoti Das  
+#### Position: [Your Position]  
+#### Duration: 2 Weeks  
+
+---
+
+#### **Fundamentals of Margining**
+
+1. **SPAN (Standard Portfolio Analysis of Risk):**
+   - SPAN is a methodology used to calculate the margin requirements for a portfolio of financial instruments.
+   - It uses a risk-based approach to determine the worst-case loss a portfolio might experience, taking into account various risk scenarios.
+
+2. **SPAN2:**
+   - SPAN2 was developed to address certain limitations of SPAN.
+   - **Problems with SPAN:**
+     - SPAN had issues with accurately reflecting the risks of more complex portfolios and newer asset classes.
+     - It struggled with capturing non-linear risks and specific market conditions.
+   - **Advantages of SPAN2:**
+     - Improved risk assessment capabilities for a wider range of asset classes.
+     - Enhanced accuracy in margin calculations by incorporating more sophisticated risk models.
+
+3. **Asset Classes:**
+   - **Currently Served by SPAN2:**
+     - Equities, futures, options, and some fixed income products.
+   - **Future Asset Classes in the Pipeline:**
+     - Cryptocurrencies, additional fixed income products, and other emerging financial instruments.
+
+4. **Optimizer:**
+   - The optimizer plays a crucial role in reducing the margin requirements for counterparties by identifying the most efficient way to allocate capital.
+   - It ensures that the margin calculations are optimized, thus minimizing the financial burden on counterparties.
+
+---
+
+#### **Operational Work Flow**
+
+1. **Daily Optimizer Report and SPANs via API:**
+   - I have been learning the process of running the daily optimizer report and SPAN calculations through API integrations.
+   - Although there were access roadblocks that delayed my understanding, I now have a fair grasp of the process.
+   - I expect to be fully capable of independently running these reports within the next week.
+
+---
+
+#### **Technical Front**
+
+1. **Automating Daily SOFR Report Using AppScript:**
+   - I successfully automated the creation of pivot tables and charts for the daily SOFR report using Google AppScript.
+   - **Current Challenge:**
+     - Automating the conversion of daily received XLSX files to Google Sheets format via code.
+     - Previously, this conversion was done manually, but I am working on a solution to streamline this process through automation.
+
+---
+
+**Summary:**
+In these two weeks, I have gained significant insights into the fundamentals of margining, the methodologies of SPAN and SPAN2, and their respective benefits and challenges. I have also understood the critical role of the optimizer in reducing margin requirements. On the operational front, I am close to independently managing the daily optimizer reports and SPAN calculations via API. Technically, I have made strides in automating the SOFR report process, though I am still working on overcoming the challenge of file format conversion.
+
+---
+
+**Next Steps:**
+- Complete the understanding and execution of daily optimizer reports and SPAN calculations.
+- Finalize the automation process for converting XLSX files to Google Sheets for the SOFR report.
+- Continue learning and adapting to new asset classes and operational workflows as they evolve.
+
+---
+
+If you need further details or have any questions, please feel free to reach out.
+
+---
+
+**Jeevan Jyoti Das**  
+[Your Position]  
+[Your Contact Information]  
