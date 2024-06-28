@@ -83,3 +83,39 @@ Sub Main()
     
     MsgBox "All tasks completed!"
 End Sub
+
+import requests
+from bs4 import BeautifulSoup
+
+url = 'YOUR_WEBPAGE_URL'
+response = requests.get(url)
+
+if response.status_code == 200:
+    soup = BeautifulSoup(response.content, 'html.parser')
+    table = soup.find('table', class_='block-trades-table')
+    
+    if table:
+        table_data = []
+        headers = table.find('thead').find_all('th')
+        header_texts = [header.text.strip() for header in headers]
+        table_data.append(header_texts)
+
+        rows = table.find('tbody').find_all('tr')
+        for row in rows:
+            columns = row.find_all('td')
+            if columns:
+                row_data = [column.text.strip() for column in columns]
+                table_data.append(row_data)
+
+        for row in table_data:
+            print(row)
+
+        import csv
+        with open('table_data.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(table_data)
+    else:
+        print("Table not found")
+else:
+    print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+
