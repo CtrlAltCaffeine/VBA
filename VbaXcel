@@ -1,58 +1,1913 @@
-from selenium import webdriver
 
-import time
-import pyautogui
-import pyperclip
-import openpyxl
-
-
-
-driver = webdriver.Chrome()
-
-date="2024-06-27"
-
-url = url.replace('tradeDate=', f'tradeDate={date}')
-driver.get(url)
-
-
-time.sleep(5)  
-
-
-pyautogui.hotkey('ctrl', 'a')
-time.sleep(1)  
-
-
-pyautogui.hotkey('ctrl', 'c')
-
-import pyautogui
-import clipboard
-import time
-import webbrowser
-
-
-def read_clipboard_content():
-    return clipboard.paste()
-
-
-def paste_to_google_sheets(sheet_url):
+Sub cVBA500()
+    Dim a As Worksheet
+    Dim b As Integer, c As Integer, d As Integer, e As Integer, f As Integer
+    Dim g As Long, h As Long
+    Dim i As Double, j As Double, k As Double
+    Dim l As Range, m As Range, n As Range
+    Dim o As ChartObject
+    Dim p As Range, q As Range
     
-    webbrowser.open(sheet_url)
-    time.sleep(10)  
-
+    Set a = ThisWorkbook.Sheets(1)
     
-    pyautogui.click(x=200, y=300)  
-    time.sleep(2)
-
+    For b = 1 To 100
+        For c = 1 To 20
+            a.Cells(b, c).Value = b * c
+        Next c
+    Next b
     
-    pyautogui.hotkey('ctrl', 'v')
+    For b = 1 To 100
+        i = 0
+        For c = 1 To 20
+            i = i + a.Cells(b, c).Value
+        Next c
+        a.Cells(b, 21).Value = i
+    Next b
+    
+    g = a.Cells(a.Rows.Count, 1).End(xlUp).Row
+    
+    Set l = a.Range("A1:T" & g)
+    
+    For b = 2 To g
+        For c = 1 To 20
+            a.Cells(b, c).Value = a.Cells(b, c).Value * 2
+        Next c
+    Next b
+    
+    For b = 2 To g
+        For c = 1 To 20
+            If a.Cells(b, c).Value > 500 Then
+                a.Cells(b, c).Interior.Color = RGB(255, 0, 0)
+            Else
+                a.Cells(b, c).Interior.Color = RGB(0, 255, 0)
+            End If
+        Next c
+    Next b
+    
+    Set p = a.Range("A1:A" & g)
+    Set q = a.Range("U1:U" & g)
+    
+    Set o = a.ChartObjects.Add(Left:=100, Width:=375, Top:=50, Height:=225)
+    With o.Chart
+        .SetSourceData Source:=a.Range("A1:U" & g)
+        .ChartType = xlLine
+        .SeriesCollection.NewSeries
+        .SeriesCollection(1).XValues = p
+        .SeriesCollection(1).Values = q
+    End With
+    
+    For b = 1 To 1000
+        For c = 1 To 500
+            d = b * c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 2 = 0 Then
+            a.Cells(b, 22).Value = "Even"
+        Else
+            a.Cells(b, 22).Value = "Odd"
+        End If
+    Next b
+    
+    For b = 1 To g
+        a.Cells(b, 23).Value = a.Cells(b, 21).Value / 2
+    Next b
+    
+    For b = 1 To g
+        If a.Cells(b, 23).Value > 250 Then
+            a.Cells(b, 24).Value = "High"
+        Else
+            a.Cells(b, 24).Value = "Low"
+        End If
+    Next b
+
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b, c + 25).Value = b + c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 35).Value = a.Cells(b, c).Value * a.Cells(b, c + 25).Value
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 200, c + 25).Value = b * c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 45).Value = a.Cells(b, c + 25).Value + a.Cells(b, c + 35).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 3 = 0 Then
+            a.Cells(b, 55).Value = "Div3"
+        Else
+            a.Cells(b, 55).Value = "NotDiv3"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 300, c + 25).Value = b - c
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 400, c + 25).Value = b / (c + 1)
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 500, c + 25).Value = b ^ c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 65).Value = a.Cells(b, c + 45).Value * a.Cells(b, c + 55).Value
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 600, c + 25).Value = Sqr(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 75).Value = a.Cells(b, c + 65).Value - a.Cells(b, c + 55).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 5 = 0 Then
+            a.Cells(b, 85).Value = "Div5"
+        Else
+            a.Cells(b, 85).Value = "NotDiv5"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 700, c + 25).Value = Log(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 95).Value = a.Cells(b, c + 75).Value / a.Cells(b, c + 85).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 7 = 0 Then
+            a.Cells(b, 105).Value = "Div7"
+        Else
+            a.Cells(b, 105).Value = "NotDiv7"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 110).Value = a.Cells(b, c + 85).Value + a.Cells(b, c + 95).Value
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 800, c + 25).Value = Exp(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 130).Value = a.Cells(b, c + 110).Value * a.Cells(b, c + 105).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 11 = 0 Then
+            a.Cells(b, 150).Value = "Div11"
+        Else
+            a.Cells(b, 150).Value = "NotDiv11"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 155).Value = a.Cells(b, c + 130).Value / a.Cells(b, c + 150).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 13 = 0 Then
+            a.Cells(b, 175).Value = "Div13"
+        Else
+            a.Cells(b, 175).Value = "NotDiv13"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 900, c + 25).Value = Sin(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 185).Value = a.Cells(b, c + 155).Value - a.Cells(b, c + 175).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 17 = 0 Then
+            a.Cells(b, 205).Value = "Div17"
+        Else
+            a.Cells(b, 205).Value = "NotDiv17"
+        End If
+    Next b
+    
+   
+
+ For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1000, c + 25).Value = Cos(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 215).Value = a.Cells(b, c + 185).Value + a.Cells(b, c + 205).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 19 = 0 Then
+            a.Cells(b, 235).Value = "Div19"
+        Else
+            a.Cells(b, 235).Value = "NotDiv19"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1100, c + 25).Value = Tan(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 245).Value = a.Cells(b, c + 215).Value * a.Cells(b, c + 235).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 23 = 0 Then
+            a.Cells(b, 265).Value = "Div23"
+        Else
+            a.Cells(b, 265).Value = "NotDiv23"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 275).Value = a.Cells(b, c + 245).Value / a.Cells(b, c + 265).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 29 = 0 Then
+            a.Cells(b, 295).Value = "Div29"
+        Else
+            a.Cells(b, 295).Value = "NotDiv29"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1200, c + 25).Value = Atan(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 305).Value = a.Cells(b, c + 275).Value - a.Cells(b, c + 295).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 31 = 0 Then
+            a.Cells(b, 325).Value = "Div31"
+        Else
+            a.Cells(b, 325).Value = "NotDiv31"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 335).Value = a.Cells(b, c + 305).Value + a.Cells(b, c + 325).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 37 = 0 Then
+            a.Cells(b, 355).Value = "Div37"
+        Else
+            a.Cells(b, 355).Value = "NotDiv37"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 365).Value = a.Cells(b, c + 335).Value * a.Cells(b, c + 355).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 41 = 0 Then
+            a.Cells(b, 385).Value = "Div41"
+        Else
+            a.Cells(b, 385).Value = "NotDiv41"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 395).Value = a.Cells(b, c + 365).Value / a.Cells(b, c + 385).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 43 = 0 Then
+            a.Cells(b, 415).Value = "Div43"
+        Else
+            a.Cells(b, 415).Value = "NotDiv43"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1300, c + 25).Value = Log10(b * c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 425).Value = a.Cells(b, c + 395).Value - a.Cells(b, c + 415).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 47 = 0 Then
+            a.Cells(b, 445).Value = "Div47"
+        Else
+            a.Cells(b, 445).Value = "NotDiv47"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 455).Value = a.Cells(b, c + 425).Value + a.Cells(b, c + 445).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 53 = 0 Then
+            a.Cells(b, 465).Value = "Div53"
+        Else
+            a.Cells(b, 465).Value = "NotDiv53"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1400, c + 25).Value = Exp(b / c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 475).Value = a.Cells(b, c + 455).Value * a.Cells(b, c + 465).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 59 = 0 Then
+            a.Cells(b, 485).Value = "Div59"
+        Else
+            a.Cells(b, 485).Value = "NotDiv59"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 495).Value = a.Cells(b, c + 475).Value / a.Cells(b, c + 485).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 61 = 0 Then
+            a.Cells(b, 505).Value = "Div61"
+        Else
+            a.Cells(b, 505).Value = "NotDiv61"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 515).Value = a.Cells(b, c + 495).Value - a.Cells(b, c + 505).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 67 = 0 Then
+            a.Cells(b, 525).Value = "Div67"
+        Else
+            a.Cells(b, 525).Value = "NotDiv67"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1500, c + 25).Value = Sqr(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 535).Value = a.Cells(b, c + 515).Value + a.Cells(b, c + 525).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 71 = 0 Then
+            a.Cells(b, 545).Value = "Div71"
+        Else
+            a.Cells(b, 545).Value = "NotDiv71"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 555).Value = a.Cells(b, c + 535).Value * a.Cells(b, c + 545).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 73 = 0 Then
+            a.Cells(b, 565).Value = "Div73"
+        Else
+            a.Cells(b, 565).Value = "NotDiv73"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 575).Value = a.Cells(b, c + 555).Value / a.Cells(b, c + 565).Value
+        Next c
+   
+
+ Next b
+    
+    For b = 1 To g
+        If b Mod 79 = 0 Then
+            a.Cells(b, 585).Value = "Div79"
+        Else
+            a.Cells(b, 585).Value = "NotDiv79"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1600, c + 25).Value = Log(b ^ c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 595).Value = a.Cells(b, c + 575).Value - a.Cells(b, c + 585).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 83 = 0 Then
+            a.Cells(b, 605).Value = "Div83"
+        Else
+            a.Cells(b, 605).Value = "NotDiv83"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 615).Value = a.Cells(b, c + 595).Value + a.Cells(b, c + 605).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 89 = 0 Then
+            a.Cells(b, 625).Value = "Div89"
+        Else
+            a.Cells(b, 625).Value = "NotDiv89"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 635).Value = a.Cells(b, c + 615).Value * a.Cells(b, c + 625).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 97 = 0 Then
+            a.Cells(b, 645).Value = "Div97"
+        Else
+            a.Cells(b, 645).Value = "NotDiv97"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1700, c + 25).Value = Sin(b * c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 655).Value = a.Cells(b, c + 635).Value / a.Cells(b, c + 645).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 101 = 0 Then
+            a.Cells(b, 665).Value = "Div101"
+        Else
+            a.Cells(b, 665).Value = "NotDiv101"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 675).Value = a.Cells(b, c + 655).Value - a.Cells(b, c + 665).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 103 = 0 Then
+            a.Cells(b, 685).Value = "Div103"
+        Else
+            a.Cells(b, 685).Value = "NotDiv103"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 695).Value = a.Cells(b, c + 675).Value + a.Cells(b, c + 685).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 107 = 0 Then
+            a.Cells(b, 705).Value = "Div107"
+        Else
+            a.Cells(b, 705).Value = "NotDiv107"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 715).Value = a.Cells(b, c + 695).Value * a.Cells(b, c + 705).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 109 == 0 Then
+            a.Cells(b, 725).Value = "Div109"
+        Else
+            a.Cells(b, 725).Value = "NotDiv109"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1800, c + 25).Value = Cos(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 735).Value = a.Cells(b, c + 715).Value / a.Cells(b, c + 725).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 113 = 0 Then
+            a.Cells(b, 745).Value = "Div113"
+        Else
+            a.Cells(b, 745).Value = "NotDiv113"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 755).Value = a.Cells(b, c + 735).Value - a.Cells(b, c + 745).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 127 = 0 Then
+            a.Cells(b, 765).Value = "Div127"
+        Else
+            a.Cells(b, 765).Value = "NotDiv127"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 775).Value = a.Cells(b, c + 755).Value + a.Cells(b, c + 765).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 131 = 0 Then
+            a.Cells(b, 785).Value = "Div131"
+        Else
+            a.Cells(b, 785).Value = "NotDiv131"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 795).Value = a.Cells(b, c + 775).Value * a.Cells(b, c + 785).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 137 = 0 Then
+            a.Cells(b, 805).Value = "Div137"
+        Else
+            a.Cells(b, 805).Value = "NotDiv137"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1900, c + 25).Value = Tan(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 815).Value = a.Cells(b, c + 795).Value / a.Cells(b, c + 805).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 139 = 0 Then
+            a.Cells(b, 825).Value = "Div139"
+        Else
+            a.Cells(b, 825).Value = "NotDiv139"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 835).Value = a.Cells(b, c + 815).Value - a.Cells(b, c + 825).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 149 = 0 Then
+            a.Cells(b, 845).Value = "Div149"
+        Else
+            a.Cells(b, 845).Value = "NotDiv149"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 855).Value = a.Cells(b, c + 835).Value + a.Cells(b, c + 845).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 151 = 0 Then
+            a.Cells(b, 865).Value = "Div151"
+        Else
+            a.Cells(b, 865).Value = "NotDiv151"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 875).Value = a.Cells(b, c + 855).Value * a.Cells(b, c + 865).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 157 = 0 Then
+            a.Cells(b, 885).Value = "Div157"
 
 
+        Else
+            a.Cells(b, 885).Value = "NotDiv157"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 2000, c + 25).Value = Exp(b * c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 895).Value = a.Cells(b, c + 875).Value / a.Cells(b, c + 885).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 163 = 0 Then
+            a.Cells(b, 905).Value = "Div163"
+        Else
+            a.Cells(b, 905).Value = "NotDiv163"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 915).Value = a.Cells(b, c + 895).Value - a.Cells(b, c + 905).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 167 = 0 Then
+            a.Cells(b, 925).Value = "Div167"
+        Else
+            a.Cells(b, 925).Value = "NotDiv167"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 935).Value = a.Cells(b, c + 915).Value + a.Cells(b, c + 925).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 173 = 0 Then
+            a.Cells(b, 945).Value = "Div173"
+        Else
+            a.Cells(b, 945).Value = "NotDiv173"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 955).Value = a.Cells(b, c + 935).Value * a.Cells(b, c + 945).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 179 = 0 Then
+            a.Cells(b, 965).Value = "Div179"
+        Else
+            a.Cells(b, 965).Value = "NotDiv179"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 2100, c + 25).Value = Log(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 975).Value = a.Cells(b, c + 955).Value / a.Cells(b, c + 965).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 181 = 0 Then
+            a.Cells(b, 985).Value = "Div181"
+        Else
+            a.Cells(b, 985).Value = "NotDiv181"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 995).Value = a.Cells(b, c + 975).Value - a.Cells(b, c + 985).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 191 = 0 Then
+            a.Cells(b, 1005).Value = "Div191"
+        Else
+            a.Cells(b, 1005).Value = "NotDiv191"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1015).Value = a.Cells(b, c + 995).Value + a.Cells(b, c + 1005).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 193 = 0 Then
+            a.Cells(b, 1025).Value = "Div193"
+        Else
+            a.Cells(b, 1025).Value = "NotDiv193"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1035).Value = a.Cells(b, c + 1015).Value * a.Cells(b, c + 1025).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 197 = 0 Then
+            a.Cells(b, 1045).Value = "Div197"
+        Else
+            a.Cells(b, 1045).Value = "NotDiv197"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1055).Value = a.Cells(b, c + 1035).Value / a.Cells(b, c + 1045).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 199 = 0 Then
+            a.Cells(b, 1065).Value = "Div199"
+        Else
+            a.Cells(b, 1065).Value = "NotDiv199"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 2200, c + 25).Value = Exp(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1075).Value = a.Cells(b, c + 1055).Value - a.Cells(b, c + 1065).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 211 = 0 Then
+            a.Cells(b, 1085).Value = "Div211"
+        Else
+            a.Cells(b, 1085).Value = "NotDiv211"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1095).Value = a.Cells(b, c + 1075).Value + a.Cells(b, c + 1085).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 223 = 0 Then
+            a.Cells(b, 1105).Value = "Div223"
+        Else
+            a.Cells(b, 1105).Value = "NotDiv223"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1115).Value = a.Cells(b, c + 1095).Value * a.Cells(b, c + 1105).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 227 = 0 Then
+            a.Cells(b, 1125).Value = "Div227"
+        Else
+            a.Cells(b, 1125).Value = "NotDiv227"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1135).Value = a.Cells(b, c + 1115).Value / a.Cells(b, c + 1125).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 229 = 0 Then
+            a.Cells(b, 1145).Value = "Div229"
+        Else
+            a.Cells(b, 1145).Value = "NotDiv229"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1155).Value = a.Cells(b, c + 1135).Value - a.Cells(b, c + 1145).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 233 = 0 Then
+            a.Cells(b, 1165).Value = "Div233"
+        Else
+            a.Cells(b, 1165).Value = "NotDiv233"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1175).Value = a.Cells(b, c + 1155).Value + a.Cells(b, c + 1165).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 239 = 0 Then
+            a.Cells(b, 1185).Value = "Div239"
+        Else
+            a.Cells(b, 1185).Value = "NotDiv239"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = Here is a more extensive and complex VBA code, reaching over 500 lines, without any comments and avoiding self-explanatory variable names:
+
+```vba
+Sub cVBA500()
+    Dim a As Worksheet
+    Dim b As Integer, c As Integer, d As Integer, e As Integer, f As Integer
+    Dim g As Long, h As Long
+    Dim i As Double, j As Double, k As Double
+    Dim l As Range, m As Range, n As Range
+    Dim o As ChartObject
+    Dim p As Range, q As Range
+    
+    Set a = ThisWorkbook.Sheets(1)
+    
+    For b = 1 To 100
+        For c = 1 To 20
+            a.Cells(b, c).Value = b * c
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        i = 0
+        For c = 1 To 20
+            i = i + a.Cells(b, c).Value
+        Next c
+        a.Cells(b, 21).Value = i
+    Next b
+    
+    g = a.Cells(a.Rows.Count, 1).End(xlUp).Row
+    
+    Set l = a.Range("A1:T" & g)
+    
+    For b = 2 To g
+        For c = 1 To 20
+            a.Cells(b, c).Value = a.Cells(b, c).Value * 2
+        Next c
+    Next b
+    
+    For b = 2 To g
+        For c = 1 To 20
+            If a.Cells(b, c).Value > 500 Then
+                a.Cells(b, c).Interior.Color = RGB(255, 0, 0)
+            Else
+                a.Cells(b, c).Interior.Color = RGB(0, 255, 0)
+            End If
+        Next c
+    Next b
+    
+    Set p = a.Range("A1:A" & g)
+    Set q = a.Range("U1:U" & g)
+    
+    Set o = a.ChartObjects.Add(Left:=100, Width:=375, Top:=50, Height:=225)
+    With o.Chart
+        .SetSourceData Source:=a.Range("A1:U" & g)
+        .ChartType = xlLine
+        .SeriesCollection.NewSeries
+        .SeriesCollection(1).XValues = p
+        .SeriesCollection(1).Values = q
+    End With
+    
+    For b = 1 To 1000
+        For c = 1 To 500
+            d = b * c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 2 = 0 Then
+            a.Cells(b, 22).Value = "Even"
+        Else
+            a.Cells(b, 22).Value = "Odd"
+        End If
+    Next b
+    
+    For b = 1 To g
+        a.Cells(b, 23).Value = a.Cells(b, 21).Value / 2
+    Next b
+    
+    For b = 1 To g
+        If a.Cells(b, 23).Value > 250 Then
+            a.Cells(b, 24).Value = "High"
+        Else
+            a.Cells(b, 24).Value = "Low"
+        End If
+    Next b
+
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b, c + 25).Value = b + c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 35).Value = a.Cells(b, c).Value * a.Cells(b, c + 25).Value
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 200, c + 25).Value = b * c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 45).Value = a.Cells(b, c + 25).Value + a.Cells(b, c + 35).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 3 = 0 Then
+            a.Cells(b, 55).Value = "Div3"
+        Else
+            a.Cells(b, 55).Value = "NotDiv3"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 300, c + 25).Value = b - c
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 400, c + 25).Value = b / (c + 1)
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 500, c + 25).Value = b ^ c
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 65).Value = a.Cells(b, c + 45).Value * a.Cells(b, c + 55).Value
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 600, c + 25).Value = Sqr(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 75).Value = a.Cells(b, c + 65).Value - a.Cells(b, c + 55).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 5 = 0 Then
+            a.Cells(b, 85).Value = "Div5"
+        Else
+            a.Cells(b, 85).Value = "NotDiv5"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 700, c + 25).Value = Log(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 10
+            a.Cells(b, c + 95).Value = a.Cells(b, c + 75).Value / a.Cells(b, c + 85).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 7 = 0 Then
+            a.Cells(b, 105).Value = "Div7"
+        Else
+            a.Cells(b, 105).Value = "NotDiv7"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 110).Value = a.Cells(b, c + 85).Value + a.Cells(b, c + 95).Value
+        Next c
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 800, c + 25).Value = Exp(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 130).Value = a.Cells(b, c + 110).Value * a.Cells(b, c + 105).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 11 = 0 Then
+            a.Cells(b, 150).Value = "Div11"
+        Else
+            a.Cells(b, 150).Value = "NotDiv11"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 155).Value = a.Cells(b, c + 130).Value / a.Cells(b, c + 150).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 13 = 0 Then
+            a.Cells(b, 175).Value = "Div13"
+        Else
+            a.Cells(b, 175).Value = "NotDiv13"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 900, c + 25).Value = Sin(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 185).Value = a.Cells(b, c + 155).Value - a.Cells(b, c + 175).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 17 = 0 Then
+            a.Cells(b, 205).Value = "Div17"
+        Else
+            a.Cells(b, 205).Value = "NotDiv17"
+        End If
+    Next b
+    
+   
+
+ For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1000, c + 25).Value = Cos(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 215).Value = a.Cells(b, c + 185).Value + a.Cells(b, c + 205).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 19 = 0 Then
+            a.Cells(b, 235).Value = "Div19"
+        Else
+            a.Cells(b, 235).Value = "NotDiv19"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1100, c + 25).Value = Tan(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 245).Value = a.Cells(b, c + 215).Value * a.Cells(b, c + 235).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 23 = 0 Then
+            a.Cells(b, 265).Value = "Div23"
+        Else
+            a.Cells(b, 265).Value = "NotDiv23"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 275).Value = a.Cells(b, c + 245).Value / a.Cells(b, c + 265).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 29 = 0 Then
+            a.Cells(b, 295).Value = "Div29"
+        Else
+            a.Cells(b, 295).Value = "NotDiv29"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1200, c + 25).Value = Atan(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 305).Value = a.Cells(b, c + 275).Value - a.Cells(b, c + 295).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 31 = 0 Then
+            a.Cells(b, 325).Value = "Div31"
+        Else
+            a.Cells(b, 325).Value = "NotDiv31"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 335).Value = a.Cells(b, c + 305).Value + a.Cells(b, c + 325).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 37 = 0 Then
+            a.Cells(b, 355).Value = "Div37"
+        Else
+            a.Cells(b, 355).Value = "NotDiv37"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 365).Value = a.Cells(b, c + 335).Value * a.Cells(b, c + 355).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 41 = 0 Then
+            a.Cells(b, 385).Value = "Div41"
+        Else
+            a.Cells(b, 385).Value = "NotDiv41"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 395).Value = a.Cells(b, c + 365).Value / a.Cells(b, c + 385).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 43 = 0 Then
+            a.Cells(b, 415).Value = "Div43"
+        Else
+            a.Cells(b, 415).Value = "NotDiv43"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1300, c + 25).Value = Log10(b * c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 425).Value = a.Cells(b, c + 395).Value - a.Cells(b, c + 415).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 47 = 0 Then
+            a.Cells(b, 445).Value = "Div47"
+        Else
+            a.Cells(b, 445).Value = "NotDiv47"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 455).Value = a.Cells(b, c + 425).Value + a.Cells(b, c + 445).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 53 = 0 Then
+            a.Cells(b, 465).Value = "Div53"
+        Else
+            a.Cells(b, 465).Value = "NotDiv53"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1400, c + 25).Value = Exp(b / c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 475).Value = a.Cells(b, c + 455).Value * a.Cells(b, c + 465).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 59 = 0 Then
+            a.Cells(b, 485).Value = "Div59"
+        Else
+            a.Cells(b, 485).Value = "NotDiv59"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 495).Value = a.Cells(b, c + 475).Value / a.Cells(b, c + 485).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 61 = 0 Then
+            a.Cells(b, 505).Value = "Div61"
+        Else
+            a.Cells(b, 505).Value = "NotDiv61"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 515).Value = a.Cells(b, c + 495).Value - a.Cells(b, c + 505).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 67 = 0 Then
+            a.Cells(b, 525).Value = "Div67"
+        Else
+            a.Cells(b, 525).Value = "NotDiv67"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1500, c + 25).Value = Sqr(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 535).Value = a.Cells(b, c + 515).Value + a.Cells(b, c + 525).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 71 = 0 Then
+            a.Cells(b, 545).Value = "Div71"
+        Else
+            a.Cells(b, 545).Value = "NotDiv71"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 555).Value = a.Cells(b, c + 535).Value * a.Cells(b, c + 545).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 73 = 0 Then
+            a.Cells(b, 565).Value = "Div73"
+        Else
+            a.Cells(b, 565).Value = "NotDiv73"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 575).Value = a.Cells(b, c + 555).Value / a.Cells(b, c + 565).Value
+        Next c
+   
+
+ Next b
+    
+    For b = 1 To g
+        If b Mod 79 = 0 Then
+            a.Cells(b, 585).Value = "Div79"
+        Else
+            a.Cells(b, 585).Value = "NotDiv79"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1600, c + 25).Value = Log(b ^ c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 595).Value = a.Cells(b, c + 575).Value - a.Cells(b, c + 585).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 83 = 0 Then
+            a.Cells(b, 605).Value = "Div83"
+        Else
+            a.Cells(b, 605).Value = "NotDiv83"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 615).Value = a.Cells(b, c + 595).Value + a.Cells(b, c + 605).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 89 = 0 Then
+            a.Cells(b, 625).Value = "Div89"
+        Else
+            a.Cells(b, 625).Value = "NotDiv89"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 635).Value = a.Cells(b, c + 615).Value * a.Cells(b, c + 625).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 97 = 0 Then
+            a.Cells(b, 645).Value = "Div97"
+        Else
+            a.Cells(b, 645).Value = "NotDiv97"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1700, c + 25).Value = Sin(b * c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 655).Value = a.Cells(b, c + 635).Value / a.Cells(b, c + 645).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 101 = 0 Then
+            a.Cells(b, 665).Value = "Div101"
+        Else
+            a.Cells(b, 665).Value = "NotDiv101"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 675).Value = a.Cells(b, c + 655).Value - a.Cells(b, c + 665).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 103 = 0 Then
+            a.Cells(b, 685).Value = "Div103"
+        Else
+            a.Cells(b, 685).Value = "NotDiv103"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 695).Value = a.Cells(b, c + 675).Value + a.Cells(b, c + 685).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 107 = 0 Then
+            a.Cells(b, 705).Value = "Div107"
+        Else
+            a.Cells(b, 705).Value = "NotDiv107"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 715).Value = a.Cells(b, c + 695).Value * a.Cells(b, c + 705).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 109 == 0 Then
+            a.Cells(b, 725).Value = "Div109"
+        Else
+            a.Cells(b, 725).Value = "NotDiv109"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1800, c + 25).Value = Cos(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 735).Value = a.Cells(b, c + 715).Value / a.Cells(b, c + 725).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 113 = 0 Then
+            a.Cells(b, 745).Value = "Div113"
+        Else
+            a.Cells(b, 745).Value = "NotDiv113"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 755).Value = a.Cells(b, c + 735).Value - a.Cells(b, c + 745).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 127 = 0 Then
+            a.Cells(b, 765).Value = "Div127"
+        Else
+            a.Cells(b, 765).Value = "NotDiv127"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 775).Value = a.Cells(b, c + 755).Value + a.Cells(b, c + 765).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 131 = 0 Then
+            a.Cells(b, 785).Value = "Div131"
+        Else
+            a.Cells(b, 785).Value = "NotDiv131"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 795).Value = a.Cells(b, c + 775).Value * a.Cells(b, c + 785).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 137 = 0 Then
+            a.Cells(b, 805).Value = "Div137"
+        Else
+            a.Cells(b, 805).Value = "NotDiv137"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 1900, c + 25).Value = Tan(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 815).Value = a.Cells(b, c + 795).Value / a.Cells(b, c + 805).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 139 = 0 Then
+            a.Cells(b, 825).Value = "Div139"
+        Else
+            a.Cells(b, 825).Value = "NotDiv139"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 835).Value = a.Cells(b, c + 815).Value - a.Cells(b, c + 825).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 149 = 0 Then
+            a.Cells(b, 845).Value = "Div149"
+        Else
+            a.Cells(b, 845).Value = "NotDiv149"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 855).Value = a.Cells(b, c + 835).Value + a.Cells(b, c + 845).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 151 = 0 Then
+            a.Cells(b, 865).Value = "Div151"
+        Else
+            a.Cells(b, 865).Value = "NotDiv151"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 875).Value = a.Cells(b, c + 855).Value * a.Cells(b, c + 865).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 157 = 0 Then
+            a.Cells(b, 885).Value = "Div157"
 
 
-
-
-
-
-
-
-paste_to_google_sheets(sheet_url)
+        Else
+            a.Cells(b, 885).Value = "NotDiv157"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 2000, c + 25).Value = Exp(b * c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 895).Value = a.Cells(b, c + 875).Value / a.Cells(b, c + 885).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 163 = 0 Then
+            a.Cells(b, 905).Value = "Div163"
+        Else
+            a.Cells(b, 905).Value = "NotDiv163"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 915).Value = a.Cells(b, c + 895).Value - a.Cells(b, c + 905).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 167 = 0 Then
+            a.Cells(b, 925).Value = "Div167"
+        Else
+            a.Cells(b, 925).Value = "NotDiv167"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 935).Value = a.Cells(b, c + 915).Value + a.Cells(b, c + 925).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 173 = 0 Then
+            a.Cells(b, 945).Value = "Div173"
+        Else
+            a.Cells(b, 945).Value = "NotDiv173"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 955).Value = a.Cells(b, c + 935).Value * a.Cells(b, c + 945).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 179 = 0 Then
+            a.Cells(b, 965).Value = "Div179"
+        Else
+            a.Cells(b, 965).Value = "NotDiv179"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 2100, c + 25).Value = Log(b + c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 975).Value = a.Cells(b, c + 955).Value / a.Cells(b, c + 965).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 181 = 0 Then
+            a.Cells(b, 985).Value = "Div181"
+        Else
+            a.Cells(b, 985).Value = "NotDiv181"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 995).Value = a.Cells(b, c + 975).Value - a.Cells(b, c + 985).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 191 = 0 Then
+            a.Cells(b, 1005).Value = "Div191"
+        Else
+            a.Cells(b, 1005).Value = "NotDiv191"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1015).Value = a.Cells(b, c + 995).Value + a.Cells(b, c + 1005).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 193 = 0 Then
+            a.Cells(b, 1025).Value = "Div193"
+        Else
+            a.Cells(b, 1025).Value = "NotDiv193"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1035).Value = a.Cells(b, c + 1015).Value * a.Cells(b, c + 1025).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 197 = 0 Then
+            a.Cells(b, 1045).Value = "Div197"
+        Else
+            a.Cells(b, 1045).Value = "NotDiv197"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1055).Value = a.Cells(b, c + 1035).Value / a.Cells(b, c + 1045).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 199 = 0 Then
+            a.Cells(b, 1065).Value = "Div199"
+        Else
+            a.Cells(b, 1065).Value = "NotDiv199"
+        End If
+    Next b
+    
+    For b = 1 To 100
+        For c = 1 To 10
+            a.Cells(b + 2200, c + 25).Value = Exp(b - c)
+        Next c
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1075).Value = a.Cells(b, c + 1055).Value - a.Cells(b, c + 1065).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 211 = 0 Then
+            a.Cells(b, 1085).Value = "Div211"
+        Else
+            a.Cells(b, 1085).Value = "NotDiv211"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1095).Value = a.Cells(b, c + 1075).Value + a.Cells(b, c + 1085).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 223 = 0 Then
+            a.Cells(b, 1105).Value = "Div223"
+        Else
+            a.Cells(b, 1105).Value = "NotDiv223"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1115).Value = a.Cells(b, c + 1095).Value * a.Cells(b, c + 1105).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 227 = 0 Then
+            a.Cells(b, 1125).Value = "Div227"
+        Else
+            a.Cells(b, 1125).Value = "NotDiv227"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1135).Value = a.Cells(b, c + 1115).Value / a.Cells(b, c + 1125).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 229 = 0 Then
+            a.Cells(b, 1145).Value = "Div229"
+        Else
+            a.Cells(b, 1145).Value = "NotDiv229"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1155).Value = a.Cells(b, c + 1135).Value - a.Cells(b, c + 1145).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 233 = 0 Then
+            a.Cells(b, 1165).Value = "Div233"
+        Else
+            a.Cells(b, 1165).Value = "NotDiv233"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 1 To 20
+            a.Cells(b, c + 1175).Value = a.Cells(b, c + 1155).Value + a.Cells(b, c + 1165).Value
+        Next c
+    Next b
+    
+    For b = 1 To g
+        If b Mod 239 = 0 Then
+            a.Cells(b, 1185).Value = "Div239"
+        Else
+            a.Cells(b, 1185).Value = "NotDiv239"
+        End If
+    Next b
+    
+    For b = 1 To g
+        For c = 
