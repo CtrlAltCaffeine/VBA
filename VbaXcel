@@ -1,33 +1,33 @@
-
 import os
 import pandas as pd
 from datetime import datetime, timedelta
 
-main_folder_path = './main_folder'
+main_folder_path = '/mnt/data/main_folder'
 
 def process_excel_file(file_path):
     df = pd.read_excel(file_path, sheet_name='Sheet1')
+    for col in df.columns[1:]:
+        df[col] = df[col].apply(lambda x: float(x.strip('%')) / 100 if isinstance(x, str) and '%' in x else pd.to_numeric(x, errors='coerce'))
     return df
 
 def process_files_for_week(start_date, end_date):
     weekly_data = []
-    
     for folder_name in os.listdir(main_folder_path):
         folder_date_str = folder_name.split('_')[-1]
         folder_date = datetime.strptime(folder_date_str, '%Y%m%d').date()
-        
         if start_date <= folder_date <= end_date:
             analysis_folder_path = os.path.join(main_folder_path, folder_name, 'analysis')
             excel_file_name = f'Savings_Results_Summary_{folder_date_str}.xlsx'
             excel_file_path = os.path.join(analysis_folder_path, excel_file_name)
-            
             if os.path.exists(excel_file_path):
                 df = process_excel_file(excel_file_path)
                 weekly_data.append(df)
-    
     if weekly_data:
         combined_df = pd.concat(weekly_data)
-        averaged_df = combined_df.groupby(combined_df.columns, axis=1).mean()
+        items_column = combined_df.iloc[:, 0]
+        numeric_columns = combined_df.iloc[:, 1:]
+        averaged_numeric_columns = numeric_columns.groupby(numeric_columns.columns, axis=1).mean()
+        averaged_df = pd.concat([items_column, averaged_numeric_columns], axis=1)
         return averaged_df
     else:
         return pd.DataFrame()
@@ -38,10 +38,9 @@ end_of_week = start_of_week + timedelta(days=4)
 
 weekly_averaged_data = process_files_for_week(start_of_week, end_of_week)
 
-output_file_path = './weekly_averaged_savings_summary.xlsx'
+output_file_path = '/mnt/data/weekly_averaged_savings_summary.xlsx'
 if not weekly_averaged_data.empty:
     weekly_averaged_data.to_excel(output_file_path, index=False)
     print("Weekly averaged data saved successfully.")
 else:
     print("No data found for the current week.")
-```
