@@ -22,11 +22,12 @@ def process_files_for_week(start_date, end_date):
             if os.path.exists(excel_file_path):
                 df = process_excel_file(excel_file_path)
                 weekly_data.append(df)
+    
     if weekly_data:
-        combined_df = pd.concat(weekly_data)
+        combined_df = pd.concat(weekly_data, ignore_index=True)
         items_column = combined_df.iloc[:, 0]
         numeric_columns = combined_df.iloc[:, 1:]
-        averaged_numeric_columns = numeric_columns.groupby(numeric_columns.columns, axis=1).mean()
+        averaged_numeric_columns = numeric_columns.mean()
         averaged_df = pd.concat([items_column, averaged_numeric_columns], axis=1)
         return averaged_df
     else:
