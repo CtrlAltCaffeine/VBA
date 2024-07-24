@@ -92,3 +92,17 @@ master_file_path = os.path.join(folder_path, 'master_sheet.xlsx')
 master_df.to_excel(master_file_path, index=False)
 
 print(f'Master sheet created successfully at {master_file_path}')
+
+import os
+import dask.dataframe as dd
+
+folder_path = 'path_to_your_folder'
+
+csv_files = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".csv")]
+
+ddf = dd.read_csv(csv_files)
+
+output_csv_path = os.path.join(folder_path, 'master_sheet.csv')
+ddf.to_csv(output_csv_path, single_file=True)
+
+print(f'Master sheet created successfully at {output_csv_path}')
