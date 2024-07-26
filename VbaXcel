@@ -1,77 +1,60 @@
-import pandas as pd
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import plotly.express as px
-import dash_table
-
-# Load the survey data
-df = pd.read_csv('/path/to/your/survey_data.csv')
-
-# Data preprocessing
-# Renaming columns for easier reference
-df.columns = ['timestamp', 'firm_id_name', 'first_pref_date', 'second_pref_date', 'third_pref_date', 'technical_freeze', 'comments']
-
-# Initialize Dash app
-app = dash.Dash(__name__)
-
-# App layout
-app.layout = html.Div(children=[
-    html.H1(children='Survey Data Analysis Dashboard'),
-
-    html.Div(children='''
-        This dashboard visualizes the survey data.
-    '''),
-
-    dcc.Graph(id='first-pref-pie'),
-    dcc.Graph(id='second-pref-pie'),
-    dcc.Graph(id='third-pref-pie'),
+Sub ImportAndAnalyzeNifty50Data()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Nifty50Data")
     
-    html.H2(children='Firm Comments'),
-    dash_table.DataTable(
-        id='comments-table',
-        columns=[{'name': 'Firm ID/Name', 'id': 'firm_id_name'}, {'name': 'Comments', 'id': 'comments'}],
-        data=df[['firm_id_name', 'comments']].to_dict('records'),
-        style_table={'overflowX': 'auto'},
-        style_cell={
-            'whiteSpace': 'normal',
-            'height': 'auto',
-        },
-    )
-])
-
-# Callback for first preference pie chart
-@app.callback(
-    Output('first-pref-pie', 'figure'),
-    Input('first-pref-pie', 'id')
-)
-def update_first_pref_pie(_):
-    fig = px.pie(df, names='first_pref_date', title='First Preference Date Distribution', 
-                 hover_data={'first_pref_date': True})
-    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
-    return fig
-
-# Callback for second preference pie chart
-@app.callback(
-    Output('second-pref-pie', 'figure'),
-    Input('second-pref-pie', 'id')
-)
-def update_second_pref_pie(_):
-    fig = px.pie(df, names='second_pref_date', title='Second Preference Date Distribution', 
-                 hover_data={'second_pref_date': True})
-    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
-    return fig
-
-# Callback for third preference pie chart
-@app.callback(
-    Output('third-pref-pie', 'figure'),
-    Input('third-pref-pie', 'id')
-)
-def update_third_pref_pie(_):
-    fig = px.pie(df, names='third_pref_date', title='Third Preference Date Distribution', 
-                 hover_data={'third_pref_date': True})
-    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
-    return fig
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+    ' Clear existing data
+    ws.Cells.Clear
+    
+    ' Import CSV data
+    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
+        .TextFileParseType = xlDelimited
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = False
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = True
+        .TextFilePlatform = xlWindows
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    ' Calculate average closing price for each stock
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    Dim stockSymbols As Collection
+    Set stockSymbols = New Collection
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        On Error Resume Next
+        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
+        On Error GoTo 0
+    Next i
+    
+    Dim stock As Variant
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalClose As Double
+    Dim count As Long
+    Dim avgClose As Double
+    Dim outputRow As Long
+    outputRow = 2
+    
+    ws.Cells(1, "G").Value = "Stock Symbol"
+    ws.Cells(1, "H").Value = "Average Closing Price"
+    
+    For Each stock In stockSymbols
+        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
+        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
+        
+        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
+        count = endRow - startRow + 1
+        avgClose = totalClose / count
+        
+        ws.Cells(outputRow, "G").Value = stock
+        ws.Cells(outputRow, "H").Value = avgClose
+        
+        outputRow = outputRow + 1
+    Next stock
+    
+    MsgBox "Data import and analysis complete!", vbInformation
+End Sub
