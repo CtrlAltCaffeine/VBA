@@ -69,11 +69,19 @@ function createTableAndChart() {
   htmlOutput.append('}');
   htmlOutput.append('</script>');
 
-  // Create table
+  // Create Firm Comments table
   htmlOutput.append('<h2>Firm Comments</h2>');
   htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>');
   for (var i = 1; i < data.length; i++) {
     htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + data[i][6] + '</td></tr>');
+  }
+  htmlOutput.append('</table>');
+
+  // Create Technical Freeze table
+  htmlOutput.append('<h2>Technical Freeze Periods</h2>');
+  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Technical Freeze</th></tr>');
+  for (var i = 1; i < data.length; i++) {
+    htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + data[i][5] + '</td></tr>');
   }
   htmlOutput.append('</table>');
 
