@@ -1,64 +1,3 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Custom Scripts')
@@ -104,7 +43,7 @@ function createTableAndChart() {
   // Append chart data to script
   for (var date in chartData) {
     var total = chartData[date][0] + chartData[date][1] + chartData[date][2];
-    htmlOutput.append('["' + date + '", ' + chartData[date][0] + ', "' + total + '", ' + chartData[date][1] + ', "' + total + '", ' + chartData[date][2] + ', "' + total + '"],');
+    htmlOutput.append('["' + date + '", ' + chartData[date][0] + ', "' + chartData[date][0] + '", ' + chartData[date][1] + ', "' + chartData[date][1] + '", ' + chartData[date][2] + ', "' + chartData[date][2] + '"],');
   }
 
   htmlOutput.append(']);');
@@ -116,11 +55,11 @@ function createTableAndChart() {
   htmlOutput.append('hAxis: {title: "Dates"},');
   htmlOutput.append('vAxis: {title: "Count"},');
   htmlOutput.append('annotations: {');
-  htmlOutput.append('alwaysOutside: true,');
+  htmlOutput.append('alwaysOutside: false,');
   htmlOutput.append('textStyle: {');
   htmlOutput.append('fontSize: 12,');
   htmlOutput.append('bold: true,');
-  htmlOutput.append('color: "#000"');
+  htmlOutput.append('color: "white"');
   htmlOutput.append('}');
   htmlOutput.append('}');
   htmlOutput.append('};');
