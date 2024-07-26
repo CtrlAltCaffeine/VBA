@@ -1,98 +1,77 @@
-import pandas as pd
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import plotly.express as px
-import plotly.graph_objects as go
-import dash_table
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Custom Scripts')
+    .addItem('Create Table and Chart', 'createTableAndChart')
+    .addToUi();
+}
 
-# Load the survey data
-df = pd.read_csv('/path/to/your/survey_data.csv')
+function createTableAndChart() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var dataRange = sheet.getDataRange();
+  var data = dataRange.getValues();
+  
+  // Create HTML output
+  var htmlOutput = HtmlService.createHtmlOutput();
+  htmlOutput.append('<h1>Survey Data Analysis</h1>');
 
-# Data preprocessing
-# Renaming columns for easier reference
-df.columns = ['timestamp', 'firm_id_name', 'first_pref_date', 'second_pref_date', 'third_pref_date', 'technical_freeze', 'comments']
+  // Create table
+  htmlOutput.append('<h2>Firm Comments</h2>');
+  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>');
+  for (var i = 1; i < data.length; i++) {
+    htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + data[i][6] + '</td></tr>');
+  }
+  htmlOutput.append('</table>');
 
-# Initialize Dash app
-app = dash.Dash(__name__)
+  // Add chart div
+  htmlOutput.append('<div id="stackedBarChart"></div>');
+  htmlOutput.append('<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>');
+  htmlOutput.append('<script type="text/javascript">');
+  htmlOutput.append('google.charts.load("current", {packages:["corechart"]});');
+  htmlOutput.append('google.charts.setOnLoadCallback(drawStackedBarChart);');
 
-# App layout
-app.layout = html.Div(children=[
-    html.H1(children='Survey Data Analysis Dashboard'),
+  // Add the script to draw the chart
+  htmlOutput.append('function drawStackedBarChart() {');
+  htmlOutput.append('var data = google.visualization.arrayToDataTable([');
+  htmlOutput.append('["Date", "First Preference", "Second Preference", "Third Preference"],');
 
-    html.Div(children='''
-        This dashboard visualizes the survey data.
-    '''),
+  // Process data for chart
+  var chartData = {};
+  for (var i = 1; i < data.length; i++) {
+    var firstDate = data[i][2];
+    var secondDate = data[i][3];
+    var thirdDate = data[i][4];
+    if (!chartData[firstDate]) chartData[firstDate] = [0, 0, 0];
+    if (!chartData[secondDate]) chartData[secondDate] = [0, 0, 0];
+    if (!chartData[thirdDate]) chartData[thirdDate] = [0, 0, 0];
+    chartData[firstDate][0]++;
+    chartData[secondDate][1]++;
+    chartData[thirdDate][2]++;
+  }
 
-    dcc.Graph(id='first-pref-pie'),
-    dcc.Graph(id='second-pref-pie'),
-    dcc.Graph(id='third-pref-pie'),
-    dcc.Graph(id='stacked-bar-chart'),
-    
-    html.H2(children='Firm Comments'),
-    dash_table.DataTable(
-        id='comments-table',
-        columns=[{'name': 'Firm ID/Name', 'id': 'firm_id_name'}, {'name': 'Comments', 'id': 'comments'}],
-        data=df[['firm_id_name', 'comments']].to_dict('records'),
-        style_table={'overflowX': 'auto'},
-        style_cell={
-            'whiteSpace': 'normal',
-            'height': 'auto',
-        },
-    )
-])
+  // Append chart data to script
+  for (var date in chartData) {
+    htmlOutput.append('["' + date + '", ' + chartData[date][0] + ', ' + chartData[date][1] + ', ' + chartData[date][2] + '],');
+  }
 
-# Callback for first preference pie chart
-@app.callback(
-    Output('first-pref-pie', 'figure'),
-    Input('first-pref-pie', 'id')
-)
-def update_first_pref_pie(_):
-    fig = px.pie(df, names='first_pref_date', title='First Preference Date Distribution', 
-                 hover_data={'first_pref_date': True}, labels={'first_pref_date': 'Date'})
-    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
-    return fig
+  htmlOutput.append(']);');
 
-# Callback for second preference pie chart
-@app.callback(
-    Output('second-pref-pie', 'figure'),
-    Input('second-pref-pie', 'id')
-)
-def update_second_pref_pie(_):
-    fig = px.pie(df, names='second_pref_date', title='Second Preference Date Distribution', 
-                 hover_data={'second_pref_date': True}, labels={'second_pref_date': 'Date'})
-    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
-    return fig
+  // Chart options
+  htmlOutput.append('var options = {');
+  htmlOutput.append('isStacked: true,');
+  htmlOutput.append('title: "Preference Dates Distribution",');
+  htmlOutput.append('hAxis: {title: "Dates"},');
+  htmlOutput.append('vAxis: {title: "Count"}');
+  htmlOutput.append('};');
 
-# Callback for third preference pie chart
-@app.callback(
-    Output('third-pref-pie', 'figure'),
-    Input('third-pref-pie', 'id')
-)
-def update_third_pref_pie(_):
-    fig = px.pie(df, names='third_pref_date', title='Third Preference Date Distribution', 
-                 hover_data={'third_pref_date': True}, labels={'third_pref_date': 'Date'})
-    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
-    return fig
+  htmlOutput.append('var chart = new google.visualization.ColumnChart(document.getElementById("stackedBarChart"));');
+  htmlOutput.append('chart.draw(data, options);');
+  htmlOutput.append('}');
+  htmlOutput.append('</script>');
 
-# Callback for stacked bar chart
-@app.callback(
-    Output('stacked-bar-chart', 'figure'),
-    Input('stacked-bar-chart', 'id')
-)
-def update_stacked_bar_chart(_):
-    df_counts = df[['first_pref_date', 'second_pref_date', 'third_pref_date']].melt(var_name='Preference', value_name='Date')
-    df_counts = df_counts.groupby(['Date', 'Preference']).size().reset_index(name='Count')
-    
-    fig = px.bar(df_counts, x='Date', y='Count', color='Preference', 
-                 title='Preference Dates Distribution',
-                 labels={'Date': 'Dates', 'Count': 'Count'},
-                 barmode='stack',
-                 text='Count')
-    
-    fig.update_layout(yaxis={'title': 'Percentage'}, yaxis_tickformat = '%')
-    
-    return fig
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+  // Show the output
+  var html = htmlOutput.getContent();
+  var htmlOutputDialog = HtmlService.createHtmlOutput(html)
+    .setWidth(800)
+    .setHeight(600);
+  SpreadsheetApp.getUi().showModalDialog(htmlOutputDialog, 'Survey Data Analysis');
+}
