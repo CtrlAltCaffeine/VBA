@@ -14,16 +14,8 @@ function createTableAndChart() {
   var htmlOutput = HtmlService.createHtmlOutput();
   htmlOutput.append('<h1>Survey Data Analysis</h1>');
 
-  // Create table
-  htmlOutput.append('<h2>Firm Comments</h2>');
-  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>');
-  for (var i = 1; i < data.length; i++) {
-    htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + data[i][6] + '</td></tr>');
-  }
-  htmlOutput.append('</table>');
-
   // Add chart div
-  htmlOutput.append('<div id="stackedBarChart"></div>');
+  htmlOutput.append('<div id="stackedBarChart" style="width: 100%; height: 500px;"></div>');
   htmlOutput.append('<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>');
   htmlOutput.append('<script type="text/javascript">');
   htmlOutput.append('google.charts.load("current", {packages:["corechart"]});');
@@ -68,6 +60,14 @@ function createTableAndChart() {
   htmlOutput.append('}');
   htmlOutput.append('</script>');
 
+  // Create table
+  htmlOutput.append('<h2>Firm Comments</h2>');
+  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>');
+  for (var i = 1; i < data.length; i++) {
+    htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + data[i][6] + '</td></tr>');
+  }
+  htmlOutput.append('</table>');
+
   // Show the output
   var html = htmlOutput.getContent();
   var htmlOutputDialog = HtmlService.createHtmlOutput(html)
@@ -75,147 +75,3 @@ function createTableAndChart() {
     .setHeight(600);
   SpreadsheetApp.getUi().showModalDialog(htmlOutputDialog, 'Survey Data Analysis');
 }
-—---------
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Custom Scripts')
-    .addItem('Open Dashboard', 'openDashboard')
-    .addToUi();
-}
-
-function openDashboard() {
-  var html = HtmlService.createHtmlOutputFromFile('dashboard')
-      .setWidth(800)
-      .setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Survey Data Analysis');
-}
-
-function getData() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var dataRange = sheet.getDataRange();
-  var data = dataRange.getValues();
-  return data;
-} 
--------
-<!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script>
-      google.charts.load('current', {'packages':['corechart', 'table']});
-      google.charts.setOnLoadCallback(drawChart);
-
-      function drawChart() {
-        google.script.run.withSuccessHandler(function(data) {
-          var parsedData = google.visualization.arrayToDataTable(data);
-          
-          // Create and draw the table
-          var table = new google.visualization.Table(document.getElementById('table_div'));
-          table.draw(parsedData, {showRowNumber: true, width: '100%', height: '100%'});
-          
-          // Process data for the stacked column chart
-          var chartData = new google.visualization.DataTable();
-          chartData.addColumn('string', 'Date');
-          chartData.addColumn('number', 'First Preference');
-          chartData.addColumn('number', 'Second Preference');
-          chartData.addColumn('number', 'Third Preference');
-
-          var counts = {};
-          for (var i = 1; i < data.length; i++) {
-            var firstDate = data[i][2];
-            var secondDate = data[i][3];
-            var thirdDate = data[i][4];
-            if (!counts[firstDate]) counts[firstDate] = [0, 0, 0];
-            if (!counts[secondDate]) counts[secondDate] = [0, 0, 0];
-            if (!counts[thirdDate]) counts[thirdDate] = [0, 0, 0];
-            counts[firstDate][0]++;
-            counts[secondDate][1]++;
-            counts[thirdDate][2]++;
-          }
-
-          for (var date in counts) {
-            chartData.addRow([date, counts[date][0], counts[date][1], counts[date][2]]);
-          }
-
-          // Create and draw the stacked column chart
-          var options = {
-            title: 'Preference Dates Distribution',
-            isStacked: true,
-            hAxis: {title: 'Dates'},
-            vAxis: {title: 'Count'}
-          };
-          var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
-          chart.draw(chartData, options);
-        }).getData();
-      }
-    </script>
-  </head>
-  <body>
-    <h1>Survey Data Analysis</h1>
-    <div id="table_div"></div>
-    <div id="chart_div" style="width: 900px; height: 500px;"></div>
-  </body>
-</html>
----------
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Custom Scripts')
-    .addItem('Create Summary and Chart', 'createSummaryAndChart')
-    .addToUi();
-}
-
-function createSummaryAndChart() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getActiveSheet();
-  var dataRange = sheet.getDataRange();
-  var data = dataRange.getValues();
-  
-  // Create a new sheet
-  var newSheet = ss.insertSheet('Summary and Chart');
-  
-  // Create the summary table
-  newSheet.getRange(1, 1).setValue('Firm ID/Name');
-  newSheet.getRange(1, 2).setValue('Comments');
-  
-  for (var i = 1; i < data.length; i++) {
-    newSheet.getRange(i + 1, 1).setValue(data[i][1]);
-    newSheet.getRange(i + 1, 2).setValue(data[i][6]);
-  }
-  
-  // Prepare data for the chart
-  var chartData = {};
-  for (var i = 1; i < data.length; i++) {
-    var firstDate = data[i][2];
-    var secondDate = data[i][3];
-    var thirdDate = data[i][4];
-    if (!chartData[firstDate]) chartData[firstDate] = [0, 0, 0];
-    if (!chartData[secondDate]) chartData[secondDate] = [0, 0, 0];
-    if (!chartData[thirdDate]) chartData[thirdDate] = [0, 0, 0];
-    chartData[firstDate][0]++;
-    chartData[secondDate][1]++;
-    chartData[thirdDate][2]++;
-  }
-
-  // Create the data table for the chart
-  var chartDataArray = [['Date', 'First Preference', 'Second Preference', 'Third Preference']];
-  for (var date in chartData) {
-    chartDataArray.push([date, chartData[date][0], chartData[date][1], chartData[date][2]]);
-  }
-  
-  var chartRange = newSheet.getRange(2, 5, chartDataArray.length, chartDataArray[0].length);
-  chartRange.setValues(chartDataArray);
-  
-  // Create the chart
-  var chart = newSheet.newChart()
-    .setChartType(Charts.ChartType.COLUMN)
-    .addRange(chartRange)
-    .setPosition(1, 5, 0, 0)
-    .setOption('title', 'Preference Dates Distribution')
-    .setOption('isStacked', true)
-    .setOption('hAxis', {title: 'Dates'})
-    .setOption('vAxis', {title: 'Count'})
-    .build();
-  
-  newSheet.insertChart(chart);
-} 
