@@ -1,65 +1,3 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
-
 import pandas as pd
 import dash
 from dash import dcc, html
@@ -84,56 +22,36 @@ app.layout = html.Div(children=[
         This dashboard visualizes the survey data.
     '''),
 
-    dcc.Graph(id='equity-rankings'),
-    dcc.Graph(id='technical-freezes'),
-
-    html.Div([
-        dcc.Dropdown(
-            id='firm-dropdown',
-            options=[{'label': firm, 'value': firm} for firm in df['firm_id_name'].unique()],
-            value=df['firm_id_name'].unique()[0],
-            clearable=False,
-            style={'width': '50%'}
-        ),
-        dcc.Graph(id='firm-preferences')
-    ])
+    dcc.Graph(id='first-pref-pie'),
+    dcc.Graph(id='second-pref-pie'),
+    dcc.Graph(id='third-pref-pie')
 ])
 
-# Callback for equity rankings
+# Callback for first preference pie chart
 @app.callback(
-    Output('equity-rankings', 'figure'),
-    Input('firm-dropdown', 'value')
+    Output('first-pref-pie', 'figure'),
+    Input('first-pref-pie', 'id')
 )
-def update_equity_rankings(selected_firm):
-    filtered_df = df[df['firm_id_name'] == selected_firm]
-    rankings = filtered_df.melt(id_vars=['firm_id_name'], value_vars=['first_pref_date', 'second_pref_date', 'third_pref_date'],
-                                var_name='Preference', value_name='Date')
-
-    fig = px.histogram(rankings, x='Date', color='Preference', barmode='group',
-                       title='Preference Dates Distribution')
+def update_first_pref_pie(_):
+    fig = px.pie(df, names='first_pref_date', title='First Preference Date Distribution')
     return fig
 
-# Callback for technical freezes
+# Callback for second preference pie chart
 @app.callback(
-    Output('technical-freezes', 'figure'),
-    Input('firm-dropdown', 'value')
+    Output('second-pref-pie', 'figure'),
+    Input('second-pref-pie', 'id')
 )
-def update_technical_freezes(selected_firm):
-    filtered_df = df[df['firm_id_name'] == selected_firm]
-    fig = px.histogram(filtered_df, x='technical_freeze', title='Technical Freeze Periods')
+def update_second_pref_pie(_):
+    fig = px.pie(df, names='second_pref_date', title='Second Preference Date Distribution')
     return fig
 
-# Callback for firm preferences
+# Callback for third preference pie chart
 @app.callback(
-    Output('firm-preferences', 'figure'),
-    Input('firm-dropdown', 'value')
+    Output('third-pref-pie', 'figure'),
+    Input('third-pref-pie', 'id')
 )
-def update_firm_preferences(selected_firm):
-    filtered_df = df[df['firm_id_name'] == selected_firm]
-    preferences = filtered_df[['first_pref_date', 'second_pref_date', 'third_pref_date']].melt(var_name='Preference', value_name='Date')
-
-    fig = px.histogram(preferences, x='Date', color='Preference', barmode='group',
-                       title=f'Preferences for {selected_firm}')
+def update_third_pref_pie(_):
+    fig = px.pie(df, names='third_pref_date', title='Third Preference Date Distribution')
     return fig
 
 if __name__ == '__main__':
