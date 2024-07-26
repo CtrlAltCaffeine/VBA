@@ -1,77 +1,60 @@
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Custom Scripts')
-    .addItem('Create Table and Chart', 'createTableAndChart')
-    .addToUi();
-}
-
-function createTableAndChart() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var dataRange = sheet.getDataRange();
-  var data = dataRange.getValues();
-  
-  // Create HTML output
-  var htmlOutput = HtmlService.createHtmlOutput();
-  htmlOutput.append('<h1>Survey Data Analysis</h1>');
-
-  // Add chart div
-  htmlOutput.append('<div id="stackedBarChart" style="width: 100%; height: 500px;"></div>');
-  htmlOutput.append('<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>');
-  htmlOutput.append('<script type="text/javascript">');
-  htmlOutput.append('google.charts.load("current", {packages:["corechart"]});');
-  htmlOutput.append('google.charts.setOnLoadCallback(drawStackedBarChart);');
-
-  // Add the script to draw the chart
-  htmlOutput.append('function drawStackedBarChart() {');
-  htmlOutput.append('var data = google.visualization.arrayToDataTable([');
-  htmlOutput.append('["Date", "First Preference", "Second Preference", "Third Preference"],');
-
-  // Process data for chart
-  var chartData = {};
-  for (var i = 1; i < data.length; i++) {
-    var firstDate = data[i][2];
-    var secondDate = data[i][3];
-    var thirdDate = data[i][4];
-    if (!chartData[firstDate]) chartData[firstDate] = [0, 0, 0];
-    if (!chartData[secondDate]) chartData[secondDate] = [0, 0, 0];
-    if (!chartData[thirdDate]) chartData[thirdDate] = [0, 0, 0];
-    chartData[firstDate][0]++;
-    chartData[secondDate][1]++;
-    chartData[thirdDate][2]++;
-  }
-
-  // Append chart data to script
-  for (var date in chartData) {
-    htmlOutput.append('["' + date + '", ' + chartData[date][0] + ', ' + chartData[date][1] + ', ' + chartData[date][2] + '],');
-  }
-
-  htmlOutput.append(']);');
-
-  // Chart options
-  htmlOutput.append('var options = {');
-  htmlOutput.append('isStacked: true,');
-  htmlOutput.append('title: "Preference Dates Distribution",');
-  htmlOutput.append('hAxis: {title: "Dates"},');
-  htmlOutput.append('vAxis: {title: "Count"}');
-  htmlOutput.append('};');
-
-  htmlOutput.append('var chart = new google.visualization.ColumnChart(document.getElementById("stackedBarChart"));');
-  htmlOutput.append('chart.draw(data, options);');
-  htmlOutput.append('}');
-  htmlOutput.append('</script>');
-
-  // Create table
-  htmlOutput.append('<h2>Firm Comments</h2>');
-  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>');
-  for (var i = 1; i < data.length; i++) {
-    htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + data[i][6] + '</td></tr>');
-  }
-  htmlOutput.append('</table>');
-
-  // Show the output
-  var html = htmlOutput.getContent();
-  var htmlOutputDialog = HtmlService.createHtmlOutput(html)
-    .setWidth(800)
-    .setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(htmlOutputDialog, 'Survey Data Analysis');
-}
+Sub ImportAndAnalyzeNifty50Data()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Nifty50Data")
+    
+    ' Clear existing data
+    ws.Cells.Clear
+    
+    ' Import CSV data
+    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
+        .TextFileParseType = xlDelimited
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = False
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = True
+        .TextFilePlatform = xlWindows
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    ' Calculate average closing price for each stock
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    Dim stockSymbols As Collection
+    Set stockSymbols = New Collection
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        On Error Resume Next
+        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
+        On Error GoTo 0
+    Next i
+    
+    Dim stock As Variant
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalClose As Double
+    Dim count As Long
+    Dim avgClose As Double
+    Dim outputRow As Long
+    outputRow = 2
+    
+    ws.Cells(1, "G").Value = "Stock Symbol"
+    ws.Cells(1, "H").Value = "Average Closing Price"
+    
+    For Each stock In stockSymbols
+        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
+        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
+        
+        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
+        count = endRow - startRow + 1
+        avgClose = totalClose / count
+        
+        ws.Cells(outputRow, "G").Value = stock
+        ws.Cells(outputRow, "H").Value = avgClose
+        
+        outputRow = outputRow + 1
+    Next stock
+    
+    MsgBox "Data import and analysis complete!", vbInformation
+End Sub
