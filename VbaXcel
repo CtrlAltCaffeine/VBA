@@ -157,3 +157,65 @@ function getData() {
     <div id="chart_div" style="width: 900px; height: 500px;"></div>
   </body>
 </html>
+---------
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Custom Scripts')
+    .addItem('Create Summary and Chart', 'createSummaryAndChart')
+    .addToUi();
+}
+
+function createSummaryAndChart() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  var dataRange = sheet.getDataRange();
+  var data = dataRange.getValues();
+  
+  // Create a new sheet
+  var newSheet = ss.insertSheet('Summary and Chart');
+  
+  // Create the summary table
+  newSheet.getRange(1, 1).setValue('Firm ID/Name');
+  newSheet.getRange(1, 2).setValue('Comments');
+  
+  for (var i = 1; i < data.length; i++) {
+    newSheet.getRange(i + 1, 1).setValue(data[i][1]);
+    newSheet.getRange(i + 1, 2).setValue(data[i][6]);
+  }
+  
+  // Prepare data for the chart
+  var chartData = {};
+  for (var i = 1; i < data.length; i++) {
+    var firstDate = data[i][2];
+    var secondDate = data[i][3];
+    var thirdDate = data[i][4];
+    if (!chartData[firstDate]) chartData[firstDate] = [0, 0, 0];
+    if (!chartData[secondDate]) chartData[secondDate] = [0, 0, 0];
+    if (!chartData[thirdDate]) chartData[thirdDate] = [0, 0, 0];
+    chartData[firstDate][0]++;
+    chartData[secondDate][1]++;
+    chartData[thirdDate][2]++;
+  }
+
+  // Create the data table for the chart
+  var chartDataArray = [['Date', 'First Preference', 'Second Preference', 'Third Preference']];
+  for (var date in chartData) {
+    chartDataArray.push([date, chartData[date][0], chartData[date][1], chartData[date][2]]);
+  }
+  
+  var chartRange = newSheet.getRange(2, 5, chartDataArray.length, chartDataArray[0].length);
+  chartRange.setValues(chartDataArray);
+  
+  // Create the chart
+  var chart = newSheet.newChart()
+    .setChartType(Charts.ChartType.COLUMN)
+    .addRange(chartRange)
+    .setPosition(1, 5, 0, 0)
+    .setOption('title', 'Preference Dates Distribution')
+    .setOption('isStacked', true)
+    .setOption('hAxis', {title: 'Dates'})
+    .setOption('vAxis', {title: 'Count'})
+    .build();
+  
+  newSheet.insertChart(chart);
+} 
