@@ -3,6 +3,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.express as px
+import dash_table
 
 # Load the survey data
 df = pd.read_csv('/path/to/your/survey_data.csv')
@@ -24,7 +25,19 @@ app.layout = html.Div(children=[
 
     dcc.Graph(id='first-pref-pie'),
     dcc.Graph(id='second-pref-pie'),
-    dcc.Graph(id='third-pref-pie')
+    dcc.Graph(id='third-pref-pie'),
+    
+    html.H2(children='Firm Comments'),
+    dash_table.DataTable(
+        id='comments-table',
+        columns=[{'name': 'Firm ID/Name', 'id': 'firm_id_name'}, {'name': 'Comments', 'id': 'comments'}],
+        data=df[['firm_id_name', 'comments']].to_dict('records'),
+        style_table={'overflowX': 'auto'},
+        style_cell={
+            'whiteSpace': 'normal',
+            'height': 'auto',
+        },
+    )
 ])
 
 # Callback for first preference pie chart
@@ -33,7 +46,9 @@ app.layout = html.Div(children=[
     Input('first-pref-pie', 'id')
 )
 def update_first_pref_pie(_):
-    fig = px.pie(df, names='first_pref_date', title='First Preference Date Distribution')
+    fig = px.pie(df, names='first_pref_date', title='First Preference Date Distribution', 
+                 hover_data={'first_pref_date': True})
+    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
     return fig
 
 # Callback for second preference pie chart
@@ -42,7 +57,9 @@ def update_first_pref_pie(_):
     Input('second-pref-pie', 'id')
 )
 def update_second_pref_pie(_):
-    fig = px.pie(df, names='second_pref_date', title='Second Preference Date Distribution')
+    fig = px.pie(df, names='second_pref_date', title='Second Preference Date Distribution', 
+                 hover_data={'second_pref_date': True})
+    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
     return fig
 
 # Callback for third preference pie chart
@@ -51,7 +68,9 @@ def update_second_pref_pie(_):
     Input('third-pref-pie', 'id')
 )
 def update_third_pref_pie(_):
-    fig = px.pie(df, names='third_pref_date', title='Third Preference Date Distribution')
+    fig = px.pie(df, names='third_pref_date', title='Third Preference Date Distribution', 
+                 hover_data={'third_pref_date': True})
+    fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value} (%{percent})')
     return fig
 
 if __name__ == '__main__':
