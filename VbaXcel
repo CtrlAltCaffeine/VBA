@@ -59,80 +59,82 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import os
-import dask.dataframe as dd
 
-folder_path = 'path_to_your_folder'
-
-excel_files = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".xlsx") or filename.endswith(".xls")]
-
-ddf = dd.read_csv(excel_files)
-master_df = ddf.compute()
-master_file_path = os.path.join(folder_path, 'master_sheet.xlsx')
-master_df.to_excel(master_file_path, index=False)
-
-print(f'Master sheet created successfully at {master_file_path}')
-
-import os
 import pandas as pd
-from concurrent.futures import ProcessPoolExecutor
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.express as px
 
-folder_path = 'path_to_your_folder'
+# Load the survey data
+df = pd.read_csv('/path/to/your/survey_data.csv')
 
-def read_excel_file(file_path):
-    return pd.read_excel(file_path)
+# Data preprocessing
+# Renaming columns for easier reference
+df.columns = ['timestamp', 'firm_id_name', 'first_pref_date', 'second_pref_date', 'third_pref_date', 'technical_freeze', 'comments']
 
-excel_files = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".xlsx") or filename.endswith(".xls")]
+# Initialize Dash app
+app = dash.Dash(__name__)
 
-with ProcessPoolExecutor() as executor:
-    dfs = list(executor.map(read_excel_file, excel_files))
+# App layout
+app.layout = html.Div(children=[
+    html.H1(children='Survey Data Analysis Dashboard'),
 
-master_df = pd.concat(dfs, ignore_index=True)
-master_file_path = os.path.join(folder_path, 'master_sheet.xlsx')
-master_df.to_excel(master_file_path, index=False)
+    html.Div(children='''
+        This dashboard visualizes the survey data.
+    '''),
 
-print(f'Master sheet created successfully at {master_file_path}')
+    dcc.Graph(id='equity-rankings'),
+    dcc.Graph(id='technical-freezes'),
 
-import os
-import dask.dataframe as dd
+    html.Div([
+        dcc.Dropdown(
+            id='firm-dropdown',
+            options=[{'label': firm, 'value': firm} for firm in df['firm_id_name'].unique()],
+            value=df['firm_id_name'].unique()[0],
+            clearable=False,
+            style={'width': '50%'}
+        ),
+        dcc.Graph(id='firm-preferences')
+    ])
+])
 
-folder_path = 'path_to_your_folder'
+# Callback for equity rankings
+@app.callback(
+    Output('equity-rankings', 'figure'),
+    Input('firm-dropdown', 'value')
+)
+def update_equity_rankings(selected_firm):
+    filtered_df = df[df['firm_id_name'] == selected_firm]
+    rankings = filtered_df.melt(id_vars=['firm_id_name'], value_vars=['first_pref_date', 'second_pref_date', 'third_pref_date'],
+                                var_name='Preference', value_name='Date')
 
-csv_files = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".csv")]
+    fig = px.histogram(rankings, x='Date', color='Preference', barmode='group',
+                       title='Preference Dates Distribution')
+    return fig
 
-ddf = dd.read_csv(csv_files)
+# Callback for technical freezes
+@app.callback(
+    Output('technical-freezes', 'figure'),
+    Input('firm-dropdown', 'value')
+)
+def update_technical_freezes(selected_firm):
+    filtered_df = df[df['firm_id_name'] == selected_firm]
+    fig = px.histogram(filtered_df, x='technical_freeze', title='Technical Freeze Periods')
+    return fig
 
-output_csv_path = os.path.join(folder_path, 'master_sheet.csv')
-ddf.to_csv(output_csv_path, single_file=True)
+# Callback for firm preferences
+@app.callback(
+    Output('firm-preferences', 'figure'),
+    Input('firm-dropdown', 'value')
+)
+def update_firm_preferences(selected_firm):
+    filtered_df = df[df['firm_id_name'] == selected_firm]
+    preferences = filtered_df[['first_pref_date', 'second_pref_date', 'third_pref_date']].melt(var_name='Preference', value_name='Date')
 
-print(f'Master sheet created successfully at {output_csv_path}')
-------
-import os
-import pandas as pd
+    fig = px.histogram(preferences, x='Date', color='Preference', barmode='group',
+                       title=f'Preferences for {selected_firm}')
+    return fig
 
-folder_path = 'path_to_your_folder'
-
-csv_files = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".csv")]
-
-dfs = [pd.read_csv(file) for file in csv_files]
-
-master_df = pd.concat(dfs, ignore_index=True)
-
-output_csv_path = os.path.join(folder_path, 'master_sheet.csv')
-master_df.to_csv(output_csv_path, index=False)
-
-print(f'Master sheet created successfully at {output_csv_path}')
-------
-import os
-import dask.dataframe as dd
-
-folder_path = 'path_to_your_folder'
-
-csv_files = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".csv")]
-
-ddf = dd.read_csv(csv_files, assume_missing=True)
-
-output_csv_path = os.path.join(folder_path, 'master_sheet.csv')
-ddf.to_csv(output_csv_path, single_file=True, header=True)
-
-print(f'Master sheet created successfully at {output_csv_path}')
+if __name__ == '__main__':
+    app.run_server(debug=True)
