@@ -1,66 +1,83 @@
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Custom Scripts')
-    .addItem('Create Pivot Table and Chart', 'createPivotTableAndChart')
-    .addToUi();
-}
-
 function createPivotTableAndChart() {
+  // Get the active spreadsheet and sheet with the original data
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getActiveSheet();
-  var range = sheet.getDataRange();
+  var sheet = ss.getSheetByName('Original Data'); // Name of the sheet with original data
+  
+  // Get the range of the original data
+  var dataRange = sheet.getDataRange();
   
   // Create a new sheet for the pivot table
-  var pivotSheet = ss.insertSheet('PivotTable');
+  var pivotSheet = ss.getSheetByName('Pivot Table');
+  if (pivotSheet) {
+    pivotSheet.clear(); // Clear existing pivot table
+  } else {
+    pivotSheet = ss.insertSheet('Pivot Table'); // Create new sheet if it doesn't exist
+  }
   
   // Create the pivot table
-  const pivotTableRange = pivotSheet.getRange('A1');
-  const pivotTable = pivotTableRange.createPivotTable(range);
-
-  pivotTable.addRowGroup(3);
-  pivotTable.addRowGroup(4);
-  pivotTable.addRowGroup(5);
-
+  var range = pivotSheet.getRange('A1');
+  const pivotTable = range.createPivotTable(dataRange);
+  
+  pivotTable.addRowGroup(3); // first_pref_date
+  pivotTable.addRowGroup(4); // second_pref_date
+  pivotTable.addRowGroup(5); // third_pref_date
   pivotTable.addPivotValue(3, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
   pivotTable.addPivotValue(4, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
   pivotTable.addPivotValue(5, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
   
-  // Wait for the pivot table to be populated
-  SpreadsheetApp.flush();
-  
-  // Create a new sheet for the chart
-  var chartSheet = ss.insertSheet('Chart');
-  
-  // Get the data from the pivot table and prepare it for the chart
-  var pivotData = pivotSheet.getDataRange().getValues();
-  var chartData = [['Date', 'First Preference', 'Second Preference', 'Third Preference']];
-  
-  for (var i = 1; i < pivotData.length; i++) {
-    var row = pivotData[i];
-    var date = row[0];
-    var firstPrefCount = row[1] || 0;
-    var secondPrefCount = row[2] || 0;
-    var thirdPrefCount = row[3] || 0;
-    
-    chartData.push([date, firstPrefCount, secondPrefCount, thirdPrefCount]);
+  // Manually adjust the pivot table data into a new sheet
+  var aggregatedSheet = ss.getSheetByName('Aggregated Data');
+  if (aggregatedSheet) {
+    aggregatedSheet.clear(); // Clear existing data
+  } else {
+    aggregatedSheet = ss.insertSheet('Aggregated Data'); // Create new sheet if it doesn't exist
   }
   
-  // Add the chart data to the chart sheet
-  chartSheet.getRange(1, 1, chartData.length, chartData[0].length).setValues(chartData);
+  // Set up headers
+  aggregatedSheet.getRange('A1').setValue('Date');
+  aggregatedSheet.getRange('B1').setValue('First Preference');
+  aggregatedSheet.getRange('C1').setValue('Second Preference');
+  aggregatedSheet.getRange('D1').setValue('Third Preference');
   
-  // Create the stacked column chart
-  var chart = chartSheet.newChart()
+  // Copy the pivot table data to the aggregated sheet and adjust it
+  var pivotData = pivotSheet.getDataRange().getValues();
+  var uniqueDates = {};
+  var rowIndex = 2; // Start at the second row
+  
+  // Aggregate the pivot data
+  for (var i = 1; i < pivotData.length; i++) {
+    var date = pivotData[i][0];
+    if (!uniqueDates[date]) {
+      uniqueDates[date] = [0, 0, 0];
+    }
+    if (pivotData[i][1] === 'first_pref_date') {
+      uniqueDates[date][0] += pivotData[i][2];
+    } else if (pivotData[i][1] === 'second_pref_date') {
+      uniqueDates[date][1] += pivotData[i][2];
+    } else if (pivotData[i][1] === 'third_pref_date') {
+      uniqueDates[date][2] += pivotData[i][2];
+    }
+  }
+  
+  // Write the aggregated data to the sheet
+  for (var date in uniqueDates) {
+    aggregatedSheet.getRange('A' + rowIndex).setValue(date);
+    aggregatedSheet.getRange('B' + rowIndex).setValue(uniqueDates[date][0]);
+    aggregatedSheet.getRange('C' + rowIndex).setValue(uniqueDates[date][1]);
+    aggregatedSheet.getRange('D' + rowIndex).setValue(uniqueDates[date][2]);
+    rowIndex++;
+  }
+  
+  // Create the chart
+  var chart = aggregatedSheet.newChart()
     .setChartType(Charts.ChartType.COLUMN)
-    .addRange(chartSheet.getRange(1, 1, chartData.length, chartData[0].length))
-    .setPosition(1, 5, 0, 0)
+    .addRange(aggregatedSheet.getRange('A1:D' + (rowIndex - 1)))
+    .setPosition(5, 1, 0, 0)
     .setOption('isStacked', true)
     .setOption('title', 'Preference Dates Distribution')
-    .setOption('hAxis', { title: 'Dates' })
-    .setOption('vAxis', { title: 'Count' })
+    .setOption('hAxis', {title: 'Dates'})
+    .setOption('vAxis', {title: 'Count'})
     .build();
   
-  chartSheet.insertChart(chart);
-  
-  // Optional: Remove the pivot table sheet
-  // ss.deleteSheet(pivotSheet);
+  aggregatedSheet.insertChart(chart);
 }
