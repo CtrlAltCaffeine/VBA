@@ -1,18 +1,30 @@
 function sendChartEmail() {
   // ID of the Google Sheet containing the chart
   var sheetId = 'YOUR_SHEET_ID';
-  
-  // Get the chart as a blob
-  var sheet = SpreadsheetApp.openById(sheetId).getSheets()[0];
-  var chart = sheet.getCharts()[0];
-  var imageBlob = chart.getAs('image/png');
+  var sheetName = 'Sheet3'; // The name of the sheet containing the chart
 
-  // Create a temporary image file in Google Drive
-  var tempImageFile = DriveApp.createFile(imageBlob);
+  // Open the Google Sheet and the specific sheet by name
+  var spreadsheet = SpreadsheetApp.openById(sheetId);
+  var sheet = spreadsheet.getSheetByName(sheetName);
 
-  // Get the image URL
+  if (!sheet) {
+    Logger.log('Sheet with name "' + sheetName + '" not found.');
+    return;
+  }
+
+  var charts = sheet.getCharts();
+  if (charts.length === 0) {
+    Logger.log('No chart found in the sheet "' + sheetName + '".');
+    return;
+  }
+
+  // Get the first chart found and its image URL
+  var chart = charts[0];
+  var chartBlob = chart.getAs('image/png');
+  var tempImageFile = DriveApp.createFile(chartBlob);
   var imageUrl = tempImageFile.getDownloadUrl();
-  
+  tempImageFile.setTrashed(true); // Clean up the temporary file
+
   // Email details
   var recipient = 'recipient@example.com';
   var subject = 'Email with Chart';
@@ -25,7 +37,4 @@ function sendChartEmail() {
     subject: subject,
     htmlBody: body
   });
-
-  // Optionally, delete the temporary file
-  tempImageFile.setTrashed(true);
 }
