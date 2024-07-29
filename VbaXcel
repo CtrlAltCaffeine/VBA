@@ -1,79 +1,64 @@
-function sendDashboardEmail() {
+function createChartAndSendEmail() {
+  // Step 1: Create a new sheet for the chart
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var chartSheet = ss.getSheetByName('ChartSheet');
+  if (!chartSheet) {
+    chartSheet = ss.insertSheet('ChartSheet');
+  } else {
+    chartSheet.clear();
+  }
+
+  // Step 2: Get the data
+  var data = getData();
+  
+  // Step 3: Add data to the new sheet
+  var headers = ['Date', 'First Preference', 'Second Preference', 'Third Preference'];
+  var chartData = processChartData(data);
+  var rows = [];
+  for (var date in chartData) {
+    rows.push([date, chartData[date][0], chartData[date][1], chartData[date][2]]);
+  }
+  chartSheet.appendRow(headers);
+  chartSheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
+
+  // Step 4: Create the chart
+  var chart = chartSheet.newChart()
+    .setChartType(Charts.ChartType.BAR)
+    .addRange(chartSheet.getRange(1, 1, rows.length + 1, headers.length))
+    .setPosition(1, 5, 0, 0)
+    .asBarChart()
+    .setStacked()
+    .setOption('title', 'Preference Dates Distribution')
+    .setOption('is3D', true)
+    .build();
+  
+  chartSheet.insertChart(chart);
+
+  // Step 5: Get the chart as an image
+  var chartImageUrl = chart.getAs('image/png').getBlob().getDataAsString();
+
+  // Step 6: Create the email content
   var emailAddress = 'recipient@example.com'; // Replace with the recipient's email address
   var subject = 'Survey Data Analysis Dashboard';
   var message = 'Please find the survey data analysis dashboard below:<br><br>';
   
-  var chartUrl = generateChartUrl();
-  message += '<img src="' + chartUrl + '"><br><br>';
-  
+  var chartBlob = UrlFetchApp.fetch(chartImageUrl).getBlob();
+  var encodedChart = Utilities.base64Encode(chartBlob.getBytes());
+  var imageUrl = 'data:image/png;base64,' + encodedChart;
+
+  message += '<img src="' + imageUrl + '"><br><br>';
   var htmlContent = createHtmlContent();
   message += htmlContent;
 
+  // Step 7: Send the email
   MailApp.sendEmail({
     to: emailAddress,
     subject: subject,
     htmlBody: message
   });
-}
 
-function generateChartUrl() {
-  // Example data for the chart
-  var data = getData();
-  var chartData = processChartData(data);
-
-  var labels = Object.keys(chartData);
-  var firstPrefs = labels.map(label => chartData[label][0]);
-  var secondPrefs = labels.map(label => chartData[label][1]);
-  var thirdPrefs = labels.map(label => chartData[label][2]);
-
-  var chartConfig = {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'First Preference',
-          data: firstPrefs,
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        },
-        {
-          label: 'Second Preference',
-          data: secondPrefs,
-          backgroundColor: 'rgba(153, 102, 255, 0.2)',
-          borderColor: 'rgba(153, 102, 255, 1)',
-          borderWidth: 1
-        },
-        {
-          label: 'Third Preference',
-          data: thirdPrefs,
-          backgroundColor: 'rgba(255, 159, 64, 0.2)',
-          borderColor: 'rgba(255, 159, 64, 1)',
-          borderWidth: 1
-        }
-      ]
-    },
-    options: {
-      scales: {
-        x: {
-          stacked: true
-        },
-        y: {
-          stacked: true
-        }
-      },
-      plugins: {
-        title: {
-          display: true,
-          text: 'Preference Dates Distribution'
-        }
-      }
-    }
-  };
-
-  var chartUrl = 'https://quickchart.io/chart?c=' + encodeURIComponent(JSON.stringify(chartConfig));
-  return chartUrl;
+  // Optional: Clean up by deleting the temporary sheet
+  // ss.deleteSheet(chartSheet);
 }
 
 function getData() {
