@@ -22,14 +22,18 @@ function sendChartEmail() {
   var chart = charts[0];
   var chartBlob = chart.getAs('image/png');
 
-  // Create a temporary image file in Google Drive and make it public
-  var tempImageFile = DriveApp.createFile(chartBlob).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  var imageUrl = tempImageFile.getDownloadUrl();
+  // Create a temporary image file in Google Drive
+  var tempImageFile = DriveApp.createFile(chartBlob);
+  tempImageFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  // Get the direct download link for the image
+  var imageUrl = "https://drive.google.com/uc?export=download&id=" + tempImageFile.getId();
 
   // Email details
   var recipient = 'recipient@example.com';
   var subject = 'Email with Chart';
   var body = '<p>Here is the chart from the Google Sheet:</p>';
+  body += '<p><a href="' + imageUrl + '">Download Chart Image</a></p>';
   body += '<img src="' + imageUrl + '" alt="Chart">';
 
   // Send the email
