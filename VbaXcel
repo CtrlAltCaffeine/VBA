@@ -18,18 +18,17 @@ function sendChartEmail() {
     return;
   }
 
-  // Get the first chart found and its image URL
+  // Get the first chart found and its image as a blob
   var chart = charts[0];
   var chartBlob = chart.getAs('image/png');
-  var tempImageFile = DriveApp.createFile(chartBlob);
-  var imageUrl = tempImageFile.getDownloadUrl();
-  tempImageFile.setTrashed(true); // Clean up the temporary file
+  var chartBase64 = Utilities.base64Encode(chartBlob.getBytes());
+  var chartSrc = 'data:image/png;base64,' + chartBase64;
 
   // Email details
   var recipient = 'recipient@example.com';
   var subject = 'Email with Chart';
   var body = '<p>Here is the chart from the Google Sheet:</p>';
-  body += '<img src="' + imageUrl + '">';
+  body += '<img src="' + chartSrc + '">';
 
   // Send the email
   MailApp.sendEmail({
