@@ -58,3 +58,93 @@ Sub ImportAndAnalyzeNifty50Data()
     
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
+
+function doGet() {
+  var htmlOutput = HtmlService.createHtmlOutput();
+  htmlOutput.append('<h1>Survey Data Analysis</h1>');
+  htmlOutput.append('<div id="stackedBarChart" style="width: 100%; height: 500px;"></div>');
+  htmlOutput.append('<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>');
+  htmlOutput.append('<script type="text/javascript">');
+  htmlOutput.append('google.charts.load("current", {packages:["corechart"]});');
+  htmlOutput.append('google.charts.setOnLoadCallback(drawStackedBarChart);');
+  htmlOutput.append('function drawStackedBarChart() {');
+  htmlOutput.append('var data = google.visualization.arrayToDataTable([');
+  htmlOutput.append('["Date", "First Preference", { role: "annotation" }, "Second Preference", { role: "annotation" }, "Third Preference", { role: "annotation" }],');
+
+  var data = getData();
+  var chartData = processChartData(data);
+
+  for (var date in chartData) {
+    var total = chartData[date][0] + chartData[date][1] + chartData[date][2];
+    htmlOutput.append('["' + date + '", ' + chartData[date][0] + ', "' + chartData[date][0] + '", ' + chartData[date][1] + ', "' + chartData[date][1] + '", ' + chartData[date][2] + ', "' + chartData[date][2] + '"],');
+  }
+
+  htmlOutput.append(']);');
+  htmlOutput.append('var options = {');
+  htmlOutput.append('isStacked: true,');
+  htmlOutput.append('title: "Preference Dates Distribution",');
+  htmlOutput.append('hAxis: {title: "Dates"},');
+  htmlOutput.append('vAxis: {title: "Count"},');
+  htmlOutput.append('annotations: {');
+  htmlOutput.append('alwaysOutside: false,');
+  htmlOutput.append('textStyle: {');
+  htmlOutput.append('fontSize: 12,');
+  htmlOutput.append('bold: true,');
+  htmlOutput.append('color: "white"');
+  htmlOutput.append('}');
+  htmlOutput.append('};');
+  htmlOutput.append('var chart = new google.visualization.ColumnChart(document.getElementById("stackedBarChart"));');
+  htmlOutput.append('chart.draw(data, options);');
+  htmlOutput.append('}');
+  htmlOutput.append('</script>');
+
+  htmlOutput.append('<h2>Firm Comments</h2>');
+  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>');
+  for (var i = 1; i < data.length; i++) {
+    var comment = data[i][6];
+    if (isValidValue(comment)) {
+      htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + comment + '</td></tr>');
+    }
+  }
+  htmlOutput.append('</table>');
+
+  htmlOutput.append('<h2>Technical Freeze Periods</h2>');
+  htmlOutput.append('<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Technical Freeze</th></tr>');
+  for (var i = 1; i < data.length; i++) {
+    var techFreeze = data[i][5];
+    if (isValidValue(techFreeze)) {
+      htmlOutput.append('<tr><td>' + data[i][1] + '</td><td>' + techFreeze + '</td></tr>');
+    }
+  }
+  htmlOutput.append('</table>');
+
+  return htmlOutput;
+}
+
+function getData() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var dataRange = sheet.getDataRange();
+  return dataRange.getValues();
+}
+
+function processChartData(data) {
+  var chartData = {};
+  for (var i = 1; i < data.length; i++) {
+    var firstDate = data[i][2];
+    var secondDate = data[i][3];
+    var thirdDate = data[i][4];
+    if (!chartData[firstDate]) chartData[firstDate] = [0, 0, 0];
+    if (!chartData[secondDate]) chartData[secondDate] = [0, 0, 0];
+    if (!chartData[thirdDate]) chartData[thirdDate] = [0, 0, 0];
+    chartData[firstDate][0]++;
+    chartData[secondDate][1]++;
+    chartData[thirdDate][2]++;
+  }
+  return chartData;
+}
+
+function isValidValue(value) {
+  if (!value) return false;
+  value = value.toString().trim().toLowerCase();
+  return value && value !== 'n/a' && value !== 'na' && value !== 'none';
+}
