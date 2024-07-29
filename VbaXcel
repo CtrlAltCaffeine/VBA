@@ -1,60 +1,54 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
+function chart() {
+  var spreadsheet = SpreadsheetApp.getActive();
+  
+  // Set formulas in columns B, C, and D
+  spreadsheet.getRange('B2').setFormula('=COUNTIF(Sheet1!C:C, A2)');
+  spreadsheet.getRange('B2:B4').autoFill(spreadsheet.getRange('B2:B4'), SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
+  
+  spreadsheet.getRange('C2').setFormula('=COUNTIF(Sheet1!D:D, A2)');
+  spreadsheet.getRange('C2:C4').autoFill(spreadsheet.getRange('C2:C4'), SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
+  
+  spreadsheet.getRange('D2').setFormula('=COUNTIF(Sheet1!E:E, A2)');
+  spreadsheet.getRange('D2:D4').autoFill(spreadsheet.getRange('D2:D4'), SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
+  
+  var sheet = spreadsheet.getActiveSheet();
+  
+  // Create the final chart
+  var chart = sheet.newChart()
+    .asColumnChart()
+    .addRange(spreadsheet.getRange('A1:D4'))
+    .setMergeStrategy(Charts.ChartMergeStrategy.MERGE_COLUMNS)
+    .setTransposeRowsAndColumns(false)
+    .setNumHeaders(1)
+    .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.IGNORE_BOTH)
+    .setOption('applyAggregateData', 0)
+    .setOption('bubble.stroke', '#000000')
+    .setOption('useFirstColumnAsDomain', true)
+    .setOption('isStacked', 'absolute')
+    .setOption('title', 'Survey Stacked Chart')
+    .setOption('annotations.domain.textStyle.color', '#808080')
+    .setOption('textStyle.color', '#000000')
+    .setOption('legend.textStyle.color', '#1a1a1a')
+    .setOption('titleTextStyle.color', '#757575')
+    .setOption('annotations.total.textStyle.color', '#808080')
+    .setXAxisTitle('Date')
+    .setOption('hAxis.textStyle.color', '#000000')
+    .setOption('vAxes.0.textStyle.color', '#000000')
+    .setOption('series.0.aggregateFunction', 'sum')
+    .setOption('series.0.hasAnnotations', true)
+    .setOption('series.0.dataLabel', 'value')
+    .setOption('series.0.dataLabelPlacement', 'center')
+    .setOption('series.1.aggregateFunction', 'sum')
+    .setOption('series.1.hasAnnotations', true)
+    .setOption('series.1.dataLabel', 'value')
+    .setOption('series.1.dataLabelPlacement', 'center')
+    .setOption('series.2.aggregateFunction', 'sum')
+    .setOption('series.2.hasAnnotations', true)
+    .setOption('series.2.dataLabel', 'value')
+    .setOption('series.2.dataLabelPlacement', 'center')
+    .setPosition(1, 1, 128, 0)
+    .build();
+  
+  // Insert the final chart
+  sheet.insertChart(chart);
+}
