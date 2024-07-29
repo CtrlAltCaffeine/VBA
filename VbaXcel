@@ -22,11 +22,8 @@ function sendChartEmail() {
   var chart = charts[0];
   var chartBlob = chart.getAs('image/png');
 
-  // Create a temporary image file in Google Drive
-  var tempImageFile = DriveApp.createFile(chartBlob);
-  tempImageFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-  // Get the image URL
+  // Create a temporary image file in Google Drive and make it public
+  var tempImageFile = DriveApp.createFile(chartBlob).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   var imageUrl = tempImageFile.getDownloadUrl();
 
   // Email details
@@ -42,7 +39,17 @@ function sendChartEmail() {
     htmlBody: body
   });
 
-  // Optionally, delete the temporary file after some time
-  Utilities.sleep(10000); // Wait for 10 seconds before deletion
-  tempImageFile.setTrashed(true);
+  // Optionally, delete the temporary file after a delay (e.g., 5 minutes)
+  ScriptApp.newTrigger('deleteTempFile')
+           .timeBased()
+           .after(5 * 60 * 1000) // 5 minutes
+           .create();
+}
+
+function deleteTempFile() {
+  var files = DriveApp.getFilesByName('Chart.png');
+  while (files.hasNext()) {
+    var file = files.next();
+    file.setTrashed(true);
+  }
 }
