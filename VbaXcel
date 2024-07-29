@@ -1,117 +1,66 @@
-function createChartAndSendEmail() {
-  // Step 1: Create a new sheet for the chart
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Custom Scripts')
+    .addItem('Create Pivot Table and Chart', 'createPivotTableAndChart')
+    .addToUi();
+}
+
+function createPivotTableAndChart() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var chartSheet = ss.getSheetByName('ChartSheet');
-  if (!chartSheet) {
-    chartSheet = ss.insertSheet('ChartSheet');
-  } else {
-    chartSheet.clear();
-  }
-
-  // Step 2: Get the data
-  var data = getData();
+  var sheet = ss.getActiveSheet();
+  var range = sheet.getDataRange();
   
-  // Step 3: Add data to the new sheet
-  var headers = ['Date', 'First Preference', 'Second Preference', 'Third Preference'];
-  var chartData = processChartData(data);
-  var rows = [];
-  for (var date in chartData) {
-    rows.push([date, chartData[date][0], chartData[date][1], chartData[date][2]]);
-  }
-  chartSheet.appendRow(headers);
-  chartSheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
+  // Create a new sheet for the pivot table
+  var pivotSheet = ss.insertSheet('PivotTable');
+  
+  // Create the pivot table
+  const pivotTableRange = pivotSheet.getRange('A1');
+  const pivotTable = pivotTableRange.createPivotTable(range);
 
-  // Step 4: Create the chart
+  pivotTable.addRowGroup(3);
+  pivotTable.addRowGroup(4);
+  pivotTable.addRowGroup(5);
+
+  pivotTable.addPivotValue(3, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
+  pivotTable.addPivotValue(4, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
+  pivotTable.addPivotValue(5, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
+  
+  // Wait for the pivot table to be populated
+  SpreadsheetApp.flush();
+  
+  // Create a new sheet for the chart
+  var chartSheet = ss.insertSheet('Chart');
+  
+  // Get the data from the pivot table and prepare it for the chart
+  var pivotData = pivotSheet.getDataRange().getValues();
+  var chartData = [['Date', 'First Preference', 'Second Preference', 'Third Preference']];
+  
+  for (var i = 1; i < pivotData.length; i++) {
+    var row = pivotData[i];
+    var date = row[0];
+    var firstPrefCount = row[1] || 0;
+    var secondPrefCount = row[2] || 0;
+    var thirdPrefCount = row[3] || 0;
+    
+    chartData.push([date, firstPrefCount, secondPrefCount, thirdPrefCount]);
+  }
+  
+  // Add the chart data to the chart sheet
+  chartSheet.getRange(1, 1, chartData.length, chartData[0].length).setValues(chartData);
+  
+  // Create the stacked column chart
   var chart = chartSheet.newChart()
-    .setChartType(Charts.ChartType.BAR)
-    .addRange(chartSheet.getRange(1, 1, rows.length + 1, headers.length))
+    .setChartType(Charts.ChartType.COLUMN)
+    .addRange(chartSheet.getRange(1, 1, chartData.length, chartData[0].length))
     .setPosition(1, 5, 0, 0)
-    .asBarChart()
-    .setStacked()
+    .setOption('isStacked', true)
     .setOption('title', 'Preference Dates Distribution')
-    .setOption('is3D', true)
+    .setOption('hAxis', { title: 'Dates' })
+    .setOption('vAxis', { title: 'Count' })
     .build();
   
   chartSheet.insertChart(chart);
-
-  // Step 5: Get the chart as an image
-  var chartImageUrl = chart.getAs('image/png').getBlob().getDataAsString();
-
-  // Step 6: Create the email content
-  var emailAddress = 'recipient@example.com'; // Replace with the recipient's email address
-  var subject = 'Survey Data Analysis Dashboard';
-  var message = 'Please find the survey data analysis dashboard below:<br><br>';
   
-  var chartBlob = UrlFetchApp.fetch(chartImageUrl).getBlob();
-  var encodedChart = Utilities.base64Encode(chartBlob.getBytes());
-  var imageUrl = 'data:image/png;base64,' + encodedChart;
-
-  message += '<img src="' + imageUrl + '"><br><br>';
-  var htmlContent = createHtmlContent();
-  message += htmlContent;
-
-  // Step 7: Send the email
-  MailApp.sendEmail({
-    to: emailAddress,
-    subject: subject,
-    htmlBody: message
-  });
-
-  // Optional: Clean up by deleting the temporary sheet
-  // ss.deleteSheet(chartSheet);
-}
-
-function getData() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var dataRange = sheet.getDataRange();
-  return dataRange.getValues();
-}
-
-function processChartData(data) {
-  var chartData = {};
-  for (var i = 1; i < data.length; i++) {
-    var firstDate = data[i][2];
-    var secondDate = data[i][3];
-    var thirdDate = data[i][4];
-    if (!chartData[firstDate]) chartData[firstDate] = [0, 0, 0];
-    if (!chartData[secondDate]) chartData[secondDate] = [0, 0, 0];
-    if (!chartData[thirdDate]) chartData[thirdDate] = [0, 0, 0];
-    chartData[firstDate][0]++;
-    chartData[secondDate][1]++;
-    chartData[thirdDate][2]++;
-  }
-  return chartData;
-}
-
-function isValidValue(value) {
-  if (!value) return false;
-  value = value.toString().trim().toLowerCase();
-  return value && value !== 'n/a' && value !== 'na' && value !== 'none';
-}
-
-function createHtmlContent() {
-  var data = getData();
-  
-  var htmlContent = '';
-  htmlContent += '<h2>Firm Comments</h2>';
-  htmlContent += '<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Comments</th></tr>';
-  for (var i = 1; i < data.length; i++) {
-    var comment = data[i][6];
-    if (isValidValue(comment)) {
-      htmlContent += '<tr><td>' + data[i][1] + '</td><td>' + comment + '</td></tr>';
-    }
-  }
-  htmlContent += '</table>';
-
-  htmlContent += '<h2>Technical Freeze Periods</h2>';
-  htmlContent += '<table border="1" cellpadding="5"><tr><th>Firm ID/Name</th><th>Technical Freeze</th></tr>';
-  for (var i = 1; i < data.length; i++) {
-    var techFreeze = data[i][5];
-    if (isValidValue(techFreeze)) {
-      htmlContent += '<tr><td>' + data[i][1] + '</td><td>' + techFreeze + '</td></tr>';
-    }
-  }
-  htmlContent += '</table>';
-
-  return htmlContent;
+  // Optional: Remove the pivot table sheet
+  // ss.deleteSheet(pivotSheet);
 }
