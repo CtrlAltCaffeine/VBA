@@ -21,14 +21,19 @@ function sendChartEmail() {
   // Get the first chart found and its image as a blob
   var chart = charts[0];
   var chartBlob = chart.getAs('image/png');
-  var chartBase64 = Utilities.base64Encode(chartBlob.getBytes());
-  var chartSrc = 'data:image/png;base64,' + chartBase64;
+
+  // Create a temporary image file in Google Drive
+  var tempImageFile = DriveApp.createFile(chartBlob);
+  tempImageFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  // Get the image URL
+  var imageUrl = tempImageFile.getDownloadUrl();
 
   // Email details
   var recipient = 'recipient@example.com';
   var subject = 'Email with Chart';
   var body = '<p>Here is the chart from the Google Sheet:</p>';
-  body += '<img src="' + chartSrc + '">';
+  body += '<img src="' + imageUrl + '" alt="Chart">';
 
   // Send the email
   MailApp.sendEmail({
@@ -36,4 +41,8 @@ function sendChartEmail() {
     subject: subject,
     htmlBody: body
   });
+
+  // Optionally, delete the temporary file after some time
+  Utilities.sleep(10000); // Wait for 10 seconds before deletion
+  tempImageFile.setTrashed(true);
 }
