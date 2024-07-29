@@ -1,83 +1,31 @@
-function createPivotTableAndChart() {
-  // Get the active spreadsheet and sheet with the original data
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('Original Data'); // Name of the sheet with original data
+function sendChartEmail() {
+  // ID of the Google Sheet containing the chart
+  var sheetId = 'YOUR_SHEET_ID';
   
-  // Get the range of the original data
-  var dataRange = sheet.getDataRange();
+  // Get the chart as a blob
+  var sheet = SpreadsheetApp.openById(sheetId).getSheets()[0];
+  var chart = sheet.getCharts()[0];
+  var imageBlob = chart.getAs('image/png');
+
+  // Create a temporary image file in Google Drive
+  var tempImageFile = DriveApp.createFile(imageBlob);
+
+  // Get the image URL
+  var imageUrl = tempImageFile.getDownloadUrl();
   
-  // Create a new sheet for the pivot table
-  var pivotSheet = ss.getSheetByName('Pivot Table');
-  if (pivotSheet) {
-    pivotSheet.clear(); // Clear existing pivot table
-  } else {
-    pivotSheet = ss.insertSheet('Pivot Table'); // Create new sheet if it doesn't exist
-  }
-  
-  // Create the pivot table
-  var range = pivotSheet.getRange('A1');
-  const pivotTable = range.createPivotTable(dataRange);
-  
-  pivotTable.addRowGroup(3); // first_pref_date
-  pivotTable.addRowGroup(4); // second_pref_date
-  pivotTable.addRowGroup(5); // third_pref_date
-  pivotTable.addPivotValue(3, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
-  pivotTable.addPivotValue(4, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
-  pivotTable.addPivotValue(5, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
-  
-  // Manually adjust the pivot table data into a new sheet
-  var aggregatedSheet = ss.getSheetByName('Aggregated Data');
-  if (aggregatedSheet) {
-    aggregatedSheet.clear(); // Clear existing data
-  } else {
-    aggregatedSheet = ss.insertSheet('Aggregated Data'); // Create new sheet if it doesn't exist
-  }
-  
-  // Set up headers
-  aggregatedSheet.getRange('A1').setValue('Date');
-  aggregatedSheet.getRange('B1').setValue('First Preference');
-  aggregatedSheet.getRange('C1').setValue('Second Preference');
-  aggregatedSheet.getRange('D1').setValue('Third Preference');
-  
-  // Copy the pivot table data to the aggregated sheet and adjust it
-  var pivotData = pivotSheet.getDataRange().getValues();
-  var uniqueDates = {};
-  var rowIndex = 2; // Start at the second row
-  
-  // Aggregate the pivot data
-  for (var i = 1; i < pivotData.length; i++) {
-    var date = pivotData[i][0];
-    if (!uniqueDates[date]) {
-      uniqueDates[date] = [0, 0, 0];
-    }
-    if (pivotData[i][1] === 'first_pref_date') {
-      uniqueDates[date][0] += pivotData[i][2];
-    } else if (pivotData[i][1] === 'second_pref_date') {
-      uniqueDates[date][1] += pivotData[i][2];
-    } else if (pivotData[i][1] === 'third_pref_date') {
-      uniqueDates[date][2] += pivotData[i][2];
-    }
-  }
-  
-  // Write the aggregated data to the sheet
-  for (var date in uniqueDates) {
-    aggregatedSheet.getRange('A' + rowIndex).setValue(date);
-    aggregatedSheet.getRange('B' + rowIndex).setValue(uniqueDates[date][0]);
-    aggregatedSheet.getRange('C' + rowIndex).setValue(uniqueDates[date][1]);
-    aggregatedSheet.getRange('D' + rowIndex).setValue(uniqueDates[date][2]);
-    rowIndex++;
-  }
-  
-  // Create the chart
-  var chart = aggregatedSheet.newChart()
-    .setChartType(Charts.ChartType.COLUMN)
-    .addRange(aggregatedSheet.getRange('A1:D' + (rowIndex - 1)))
-    .setPosition(5, 1, 0, 0)
-    .setOption('isStacked', true)
-    .setOption('title', 'Preference Dates Distribution')
-    .setOption('hAxis', {title: 'Dates'})
-    .setOption('vAxis', {title: 'Count'})
-    .build();
-  
-  aggregatedSheet.insertChart(chart);
+  // Email details
+  var recipient = 'recipient@example.com';
+  var subject = 'Email with Chart';
+  var body = '<p>Here is the chart from the Google Sheet:</p>';
+  body += '<img src="' + imageUrl + '">';
+
+  // Send the email
+  MailApp.sendEmail({
+    to: recipient,
+    subject: subject,
+    htmlBody: body
+  });
+
+  // Optionally, delete the temporary file
+  tempImageFile.setTrashed(true);
 }
