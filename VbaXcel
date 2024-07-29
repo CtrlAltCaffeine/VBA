@@ -1,59 +1,60 @@
-function sendChartEmail() {
-  // ID of the Google Sheet containing the chart
-  var sheetId = 'YOUR_SHEET_ID';
-  var sheetName = 'Sheet3'; // The name of the sheet containing the chart
-
-  // Open the Google Sheet and the specific sheet by name
-  var spreadsheet = SpreadsheetApp.openById(sheetId);
-  var sheet = spreadsheet.getSheetByName(sheetName);
-
-  if (!sheet) {
-    Logger.log('Sheet with name "' + sheetName + '" not found.');
-    return;
-  }
-
-  var charts = sheet.getCharts();
-  if (charts.length === 0) {
-    Logger.log('No chart found in the sheet "' + sheetName + '".');
-    return;
-  }
-
-  // Get the first chart found and its image as a blob
-  var chart = charts[0];
-  var chartBlob = chart.getAs('image/png');
-
-  // Create a temporary image file in Google Drive
-  var tempImageFile = DriveApp.createFile(chartBlob);
-  tempImageFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-  // Get the direct download link for the image
-  var imageUrl = "https://drive.google.com/uc?export=download&id=" + tempImageFile.getId();
-
-  // Email details
-  var recipient = 'recipient@example.com';
-  var subject = 'Email with Chart';
-  var body = '<p>Here is the chart from the Google Sheet:</p>';
-  body += '<p><a href="' + imageUrl + '">Download Chart Image</a></p>';
-  body += '<img src="' + imageUrl + '" alt="Chart">';
-
-  // Send the email
-  MailApp.sendEmail({
-    to: recipient,
-    subject: subject,
-    htmlBody: body
-  });
-
-  // Optionally, delete the temporary file after a delay (e.g., 5 minutes)
-  ScriptApp.newTrigger('deleteTempFile')
-           .timeBased()
-           .after(5 * 60 * 1000) // 5 minutes
-           .create();
-}
-
-function deleteTempFile() {
-  var files = DriveApp.getFilesByName('Chart.png');
-  while (files.hasNext()) {
-    var file = files.next();
-    file.setTrashed(true);
-  }
-}
+Sub ImportAndAnalyzeNifty50Data()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Nifty50Data")
+    
+    ' Clear existing data
+    ws.Cells.Clear
+    
+    ' Import CSV data
+    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
+        .TextFileParseType = xlDelimited
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = False
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = True
+        .TextFilePlatform = xlWindows
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    ' Calculate average closing price for each stock
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    Dim stockSymbols As Collection
+    Set stockSymbols = New Collection
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        On Error Resume Next
+        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
+        On Error GoTo 0
+    Next i
+    
+    Dim stock As Variant
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalClose As Double
+    Dim count As Long
+    Dim avgClose As Double
+    Dim outputRow As Long
+    outputRow = 2
+    
+    ws.Cells(1, "G").Value = "Stock Symbol"
+    ws.Cells(1, "H").Value = "Average Closing Price"
+    
+    For Each stock In stockSymbols
+        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
+        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
+        
+        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
+        count = endRow - startRow + 1
+        avgClose = totalClose / count
+        
+        ws.Cells(outputRow, "G").Value = stock
+        ws.Cells(outputRow, "H").Value = avgClose
+        
+        outputRow = outputRow + 1
+    Next stock
+    
+    MsgBox "Data import and analysis complete!", vbInformation
+End Sub
