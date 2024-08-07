@@ -1,60 +1,35 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
+from taipy.gui import Gui
+import pandas as pd
+
+path1 = None
+data1 = None
+path2 = None
+data2 = None
+path3 = None
+data3 = None
+
+md = """
+<|{path1}|file_selector|label=Upload dataset for Tab 1|on_action=load_csv_file_1|extensions=.csv|>
+<|{data1}|table|rebuild|>
+
+<|{path2}|file_selector|label=Upload dataset for Tab 2|on_action=load_csv_file_2|extensions=.csv|>
+<|{data2}|table|rebuild|>
+
+<|{path3}|file_selector|label=Upload dataset for Tab 3|on_action=load_csv_file_3|extensions=.csv|>
+<|{data3}|table|rebuild|>
+"""
+
+def load_csv_file_1(state):
+    state.data1 = pd.read_csv(state.path1)
+    print(state.data1)
+
+def load_csv_file_2(state):
+    state.data2 = pd.read_csv(state.path2)
+    print(state.data2)
+
+def load_csv_file_3(state):
+    state.data3 = pd.read_csv(state.path3)
+    print(state.data3)
+
+gui = Gui(md)
+gui.run()
