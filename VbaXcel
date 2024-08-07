@@ -1,4 +1,4 @@
-from taipy.gui import Gui
+import taipy.gui as tgb
 import pandas as pd
 
 path1 = None
@@ -8,28 +8,38 @@ data2 = None
 path3 = None
 data3 = None
 
-md = """
-<|{path1}|file_selector|label=Upload dataset for Tab 1|on_action=load_csv_file_1|extensions=.csv|>
-<|{data1}|table|rebuild|>
-
-<|{path2}|file_selector|label=Upload dataset for Tab 2|on_action=load_csv_file_2|extensions=.csv|>
-<|{data2}|table|rebuild|>
-
-<|{path3}|file_selector|label=Upload dataset for Tab 3|on_action=load_csv_file_3|extensions=.csv|>
-<|{data3}|table|rebuild|>
-"""
-
 def load_csv_file_1(state):
     state.data1 = pd.read_csv(state.path1)
-    print(state.data1)
+    tgb.notify(state, 'info', f'File {state.path1} uploaded successfully!')
 
 def load_csv_file_2(state):
     state.data2 = pd.read_csv(state.path2)
-    print(state.data2)
+    tgb.notify(state, 'info', f'File {state.path2} uploaded successfully!')
 
 def load_csv_file_3(state):
     state.data3 = pd.read_csv(state.path3)
-    print(state.data3)
+    tgb.notify(state, 'info', f'File {state.path3} uploaded successfully!')
 
-gui = Gui(md)
-gui.run()
+with tgb.Page() as root_page:
+    tgb.text("# CME Cross Margin Reporting", mode="md", class_name="title", id="ab")
+    tgb.navbar()
+
+with tgb.Page() as page_1:
+    tgb.text("## This is page 1", mode="md")
+    tgb.file_selector(content="path1", label="Select File", on_action=load_csv_file_1, extensions=".csv,.xlsx", drop_message="Drop Message")
+    tgb.table("data1", page_size=5, editable=True, filter=True, page_size_options="10")
+
+with tgb.Page() as page_2:
+    tgb.text("## This is page 2", mode="md")
+    tgb.file_selector(content="path2", label="Select File", on_action=load_csv_file_2, extensions=".csv,.xlsx", drop_message="Drop Message")
+    tgb.table("data2", page_size=5, editable=True, filter=True, page_size_options="10")
+
+with tgb.Page() as page_3:
+    tgb.text("## This is page 3", mode="md")
+    tgb.file_selector(content="path3", label="Select File", on_action=load_csv_file_3, extensions=".csv,.xlsx", drop_message="Drop Message")
+    tgb.table("data3", page_size=5, editable=True, filter=True, page_size_options="10")
+
+app = tgb.Gui(pages={"root": root_page, "page1": page_1, "page2": page_2, "page3": page_3})
+
+if __name__ == "__main__":
+    app.run()
