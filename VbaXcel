@@ -1,62 +1,60 @@
-import taipy.gui as tgb
-import pandas as pd
-
-path1 = None
-data1 = None
-path2 = None
-data2 = None
-path3 = None
-data3 = None
-
-def load_csv_file_1(state):
-    state.data1 = pd.read_csv(state.path1)
-    tgb.notify(state, 'info', f'File {state.path1} uploaded successfully!')
-
-def load_csv_file_2(state):
-    state.data2 = pd.read_csv(state.path2)
-    tgb.notify(state, 'info', f'File {state.path2} uploaded successfully!')
-
-def load_csv_file_3(state):
-    state.data3 = pd.read_csv(state.path3)
-    tgb.notify(state, 'info', f'File {state.path3} uploaded successfully!')
-
-# Define the page contents using Markdown
-root_content = """
-# Cross Margin Reporting
-<|navbar|>
-"""
-
-page_1_content = """
-## This is page 1
-<|{path1}|file_selector|label=Select File|extensions=.csv,.xlsx|on_change=load_csv_file_1|drop_message=Drop Message|>
-<|{data1}|table|page_size=5|editable=True|filter=True|page_size_options=10|>
-"""
-
-page_2_content = """
-## This is page 2
-<|{path2}|file_selector|label=Select File|extensions=.csv,.xlsx|on_change=load_csv_file_2|drop_message=Drop Message|>
-<|{data2}|table|page_size=5|editable=True|filter=True|page_size_options=10|>
-"""
-
-page_3_content = """
-## This is page 3
-<|{path3}|file_selector|label=Select File|extensions=.csv,.xlsx|on_change=load_csv_file_3|drop_message=Drop Message|>
-<|{data3}|table|page_size=5|editable=True|filter=True|page_size_options=10|>
-"""
-
-# Define pages
-root_page = tgb.Markdown(root_content)
-page_1 = tgb.Markdown(page_1_content)
-page_2 = tgb.Markdown(page_2_content)
-page_3 = tgb.Markdown(page_3_content)
-
-# Create the GUI application
-app = tgb.Gui(pages={
-    "root": root_page,
-    "page1": page_1,
-    "page2": page_2,
-    "page3": page_3,
-})
-
-if __name__ == "__main__":
-    app.run(port=5003)
+Sub ImportAndAnalyzeNifty50Data()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Nifty50Data")
+    
+    ' Clear existing data
+    ws.Cells.Clear
+    
+    ' Import CSV data
+    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
+        .TextFileParseType = xlDelimited
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = False
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = True
+        .TextFilePlatform = xlWindows
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    ' Calculate average closing price for each stock
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    Dim stockSymbols As Collection
+    Set stockSymbols = New Collection
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        On Error Resume Next
+        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
+        On Error GoTo 0
+    Next i
+    
+    Dim stock As Variant
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalClose As Double
+    Dim count As Long
+    Dim avgClose As Double
+    Dim outputRow As Long
+    outputRow = 2
+    
+    ws.Cells(1, "G").Value = "Stock Symbol"
+    ws.Cells(1, "H").Value = "Average Closing Price"
+    
+    For Each stock In stockSymbols
+        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
+        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
+        
+        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
+        count = endRow - startRow + 1
+        avgClose = totalClose / count
+        
+        ws.Cells(outputRow, "G").Value = stock
+        ws.Cells(outputRow, "H").Value = avgClose
+        
+        outputRow = outputRow + 1
+    Next stock
+    
+    MsgBox "Data import and analysis complete!", vbInformation
+End Sub
