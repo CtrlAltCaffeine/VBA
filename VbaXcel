@@ -20,26 +20,43 @@ def load_csv_file_3(state):
     state.data3 = pd.read_csv(state.path3)
     tgb.notify(state, 'info', f'File {state.path3} uploaded successfully!')
 
-with tgb.Page() as root_page:
-    tgb.text("# CME Cross Margin Reporting", mode="md", class_name="title", id="ab")
-    tgb.navbar()
+# Define the page contents using Markdown
+root_content = """
+# Cross Margin Reporting
+<|navbar|>
+"""
 
-with tgb.Page() as page_1:
-    tgb.text("## This is page 1", mode="md")
-    tgb.file_selector(content="path1", label="Select File", on_action=load_csv_file_1, extensions=".csv,.xlsx", drop_message="Drop Message")
-    tgb.table("data1", page_size=5, editable=True, filter=True, page_size_options="10")
+page_1_content = """
+## This is page 1
+<|{path1}|file_selector|label=Select File|extensions=.csv,.xlsx|on_change=load_csv_file_1|drop_message=Drop Message|>
+<|{data1}|table|page_size=5|editable=True|filter=True|page_size_options=10|>
+"""
 
-with tgb.Page() as page_2:
-    tgb.text("## This is page 2", mode="md")
-    tgb.file_selector(content="path2", label="Select File", on_action=load_csv_file_2, extensions=".csv,.xlsx", drop_message="Drop Message")
-    tgb.table("data2", page_size=5, editable=True, filter=True, page_size_options="10")
+page_2_content = """
+## This is page 2
+<|{path2}|file_selector|label=Select File|extensions=.csv,.xlsx|on_change=load_csv_file_2|drop_message=Drop Message|>
+<|{data2}|table|page_size=5|editable=True|filter=True|page_size_options=10|>
+"""
 
-with tgb.Page() as page_3:
-    tgb.text("## This is page 3", mode="md")
-    tgb.file_selector(content="path3", label="Select File", on_action=load_csv_file_3, extensions=".csv,.xlsx", drop_message="Drop Message")
-    tgb.table("data3", page_size=5, editable=True, filter=True, page_size_options="10")
+page_3_content = """
+## This is page 3
+<|{path3}|file_selector|label=Select File|extensions=.csv,.xlsx|on_change=load_csv_file_3|drop_message=Drop Message|>
+<|{data3}|table|page_size=5|editable=True|filter=True|page_size_options=10|>
+"""
 
-app = tgb.Gui(pages={"root": root_page, "page1": page_1, "page2": page_2, "page3": page_3})
+# Define pages
+root_page = tgb.Markdown(root_content)
+page_1 = tgb.Markdown(page_1_content)
+page_2 = tgb.Markdown(page_2_content)
+page_3 = tgb.Markdown(page_3_content)
+
+# Create the GUI application
+app = tgb.Gui(pages={
+    "root": root_page,
+    "page1": page_1,
+    "page2": page_2,
+    "page3": page_3,
+})
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=5003)
