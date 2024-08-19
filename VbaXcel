@@ -58,3 +58,54 @@ Sub ImportAndAnalyzeNifty50Data()
     
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
+
+import json
+
+def load_json(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+def flatten_json(y, prefix=''):
+    out = {}
+    for key, value in y.items():
+        if isinstance(value, dict):
+            out.update(flatten_json(value, prefix + key + '.'))
+        else:
+            out[prefix + key] = value
+    return out
+
+def compare_flattened_json(flattened_json1, flattened_json2):
+    differences = []
+
+    for key in flattened_json1:
+        if key not in flattened_json2:
+            differences.append(f"Key '{key}' found in first JSON but not in second JSON")
+        elif flattened_json1[key] != flattened_json2[key]:
+            differences.append(f"Value difference at '{key}': {flattened_json1[key]} (first JSON) != {flattened_json2[key]} (second JSON)")
+    
+    for key in flattened_json2:
+        if key not in flattened_json1:
+            differences.append(f"Key '{key}' found in second JSON but not in first JSON")
+
+    return differences
+
+def main(json_file1, json_file2):
+    json1 = load_json(json_file1)
+    json2 = load_json(json_file2)
+
+    flattened_json1 = flatten_json(json1)
+    flattened_json2 = flatten_json(json2)
+
+    differences = compare_flattened_json(flattened_json1, flattened_json2)
+
+    if differences:
+        print("Differences found:")
+        for diff in differences:
+            print(diff)
+    else:
+        print("The JSON files are identical.")
+
+
+json_file1 = 'file1.json'
+json_file2 = 'file2.json'
+main(json_file1, json_file2)
