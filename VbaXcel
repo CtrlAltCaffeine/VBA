@@ -109,3 +109,55 @@ def main(json_file1, json_file2):
 json_file1 = 'file1.json'
 json_file2 = 'file2.json'
 main(json_file1, json_file2)
+
+import json
+
+def load_json(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+def extract_key_value_pairs(json_obj, prefix=''):
+    pairs = []
+    for key, value in json_obj.items():
+        full_key = f"{prefix}{key}"
+        if isinstance(value, dict):
+            pairs.extend(extract_key_value_pairs(value, prefix=full_key + "."))
+        else:
+            pairs.append((full_key, value))
+    return pairs
+
+def compare_key_value_pairs(pairs1, pairs2):
+    set1 = set(pairs1)
+    set2 = set(pairs2)
+
+    only_in_first = set1 - set2
+    only_in_second = set2 - set1
+
+    return only_in_first, only_in_second
+
+def main(json_file1, json_file2):
+    json1 = load_json(json_file1)
+    json2 = load_json(json_file2)
+
+    pairs1 = extract_key_value_pairs(json1)
+    pairs2 = extract_key_value_pairs(json2)
+
+    only_in_first, only_in_second = compare_key_value_pairs(pairs1, pairs2)
+
+    if only_in_first:
+        print("Key-value pairs only in the first JSON file:")
+        for pair in only_in_first:
+            print(pair)
+
+    if only_in_second:
+        print("Key-value pairs only in the second JSON file:")
+        for pair in only_in_second:
+            print(pair)
+
+    if not only_in_first and not only_in_second:
+        print("The JSON files contain the same key-value pairs.")
+
+# Example usage
+json_file1 = 'file1.json'
+json_file2 = 'file2.json'
+main(json_file1, json_file2)
