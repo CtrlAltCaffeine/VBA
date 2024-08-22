@@ -81,3 +81,44 @@ def xml_to_csv(xml_file, csv_file):
 xml_file = 'data.xml'
 csv_file = 'data.csv'
 xml_to_csv(xml_file, csv_file)
+
+import xml.etree.ElementTree as ET
+import csv
+
+def parse_xml_to_csv(xml_file, csv_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    with open(csv_file, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        headers = ['firm', 'acctId', 'acctType', 'isCust', 'currency', 'ec', 
+                   'exch', 'pfCode', 'pfType', 'pe', 'undPe', 'o', 'k', 'net']
+        writer.writerow(headers)
+
+        for portfolio in root.findall('.//portfolio'):
+            firm = portfolio.find('firm').text
+            acctId = portfolio.find('acctId').text
+            acctType = portfolio.find('acctType').text
+            isCust = portfolio.find('isCust').text
+            currency = portfolio.find('currency').text
+            ec = portfolio.find('.//ecPort/ec').text
+
+            for np in portfolio.findall('.//np'):
+                exch = np.find('exch').text
+                pfCode = np.find('pfCode').text
+                pfType = np.find('pfType').text
+                pe = np.find('pe').text
+                undPe = np.find('undPe').text
+                o = np.find('o').text
+                k = np.find('k').text
+                net = np.find('net').text
+
+                writer.writerow([firm, acctId, acctType, isCust, currency, ec, 
+                                 exch, pfCode, pfType, pe, undPe, o, k, net])
+
+    print(f"Data successfully written to {csv_file}")
+
+xml_file = 'path_to_your_xml_file.xml'
+csv_file = 'output_data.csv'
+parse_xml_to_csv(xml_file, csv_file)
