@@ -1,93 +1,12 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
-import xml.etree.ElementTree as ET
-import csv
-
-def xml_to_csv(xml_file, csv_file):
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-
-    with open(csv_file, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-
-        headers = [elem.tag for elem in root[0]]
-        writer.writerow(headers)
-
-        for child in root:
-            row = [child.find(header).text if child.find(header) is not None else '' for header in headers]
-            writer.writerow(row)
-
-    print(f"Data successfully written to {csv_file}")
-
-xml_file = 'data.xml'
-csv_file = 'data.csv'
-xml_to_csv(xml_file, csv_file)
-
 import xml.etree.ElementTree as ET
 import csv
 
 def parse_xml_to_csv(xml_file, csv_file):
     tree = ET.parse(xml_file)
     root = tree.getroot()
+
+    def get_text_or_default(element, default=''):
+        return element.text if element is not None else default
 
     with open(csv_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -97,22 +16,22 @@ def parse_xml_to_csv(xml_file, csv_file):
         writer.writerow(headers)
 
         for portfolio in root.findall('.//portfolio'):
-            firm = portfolio.find('firm').text
-            acctId = portfolio.find('acctId').text
-            acctType = portfolio.find('acctType').text
-            isCust = portfolio.find('isCust').text
-            currency = portfolio.find('currency').text
-            ec = portfolio.find('.//ecPort/ec').text
+            firm = get_text_or_default(portfolio.find('firm'))
+            acctId = get_text_or_default(portfolio.find('acctId'))
+            acctType = get_text_or_default(portfolio.find('acctType'))
+            isCust = get_text_or_default(portfolio.find('isCust'))
+            currency = get_text_or_default(portfolio.find('currency'))
+            ec = get_text_or_default(portfolio.find('.//ecPort/ec'))
 
             for np in portfolio.findall('.//np'):
-                exch = np.find('exch').text
-                pfCode = np.find('pfCode').text
-                pfType = np.find('pfType').text
-                pe = np.find('pe').text
-                undPe = np.find('undPe').text
-                o = np.find('o').text
-                k = np.find('k').text
-                net = np.find('net').text
+                exch = get_text_or_default(np.find('exch'))
+                pfCode = get_text_or_default(np.find('pfCode'))
+                pfType = get_text_or_default(np.find('pfType'))
+                pe = get_text_or_default(np.find('pe'))
+                undPe = get_text_or_default(np.find('undPe'))
+                o = get_text_or_default(np.find('o'))
+                k = get_text_or_default(np.find('k'))
+                net = get_text_or_default(np.find('net'))
 
                 writer.writerow([firm, acctId, acctType, isCust, currency, ec, 
                                  exch, pfCode, pfType, pe, undPe, o, k, net])
