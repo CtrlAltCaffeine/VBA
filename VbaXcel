@@ -58,3 +58,38 @@ Sub ImportAndAnalyzeNifty50Data()
     
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
+
+import os
+import zipfile
+from datetime import datetime
+
+def get_zip_file_by_date(folder_path, user_date):
+    date_str = user_date.strftime('%Y%m%d')
+    expected_file_name = f"CERT.cme_xmrgn_positions.{date_str}.zip"
+    
+    for file_name in os.listdir(folder_path):
+        if file_name == expected_file_name:
+            return os.path.join(folder_path, file_name)
+    
+    return None
+
+def unzip_file(zip_file_path):
+    extract_to_folder = zip_file_path.replace('.zip', '')
+    
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_to_folder)
+    
+    print(f"Unzipped the file to: {extract_to_folder}")
+
+def main():
+    folder_path = 'path/to/your/folder'
+    user_input = input("Enter the date (YYYY-MM-DD): ")
+    user_date = datetime.strptime(user_input, '%Y-%m-%d')
+    
+    zip_file_path = get_zip_file_by_date(folder_path, user_date)
+    
+    if zip_file_path:
+        unzip_file(zip_file_path)
+    else:
+        print("No zip file found for the given date.")
+
