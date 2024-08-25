@@ -93,3 +93,29 @@ def main():
     else:
         print("No zip file found for the given date.")
 
+import os
+import subprocess
+
+folder_path = r"C:\path\to\your\folder"
+date = input("Enter the date (YYYY-MM-DD): ")
+position = ""
+
+pre_script_path = os.path.join(folder_path, "Script_Pre.txt")
+bat_file_path = os.path.join(folder_path, "run_approx.bat")
+
+with open(pre_script_path, 'r') as file:
+    lines = file.readlines()
+
+if len(lines) > 10:
+    lines[10] = "qwerty\n"
+if len(lines) > 14:
+    lines[14] = "abcde\n"
+
+with open(pre_script_path, 'w') as file:
+    file.writelines(lines)
+
+print(f"Modified {pre_script_path} successfully.")
+
+subprocess.run([bat_file_path], shell=True)
+
+print(f"Executed {bat_file_path} successfully.")
