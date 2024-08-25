@@ -1,121 +1,12 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
-import os
-import zipfile
-from datetime import datetime
-
-def get_zip_file_by_date(folder_path, user_date):
-    date_str = user_date.strftime('%Y%m%d')
-    expected_file_name = f"CERT.cme_xmrgn_positions.{date_str}.zip"
-    
-    for file_name in os.listdir(folder_path):
-        if file_name == expected_file_name:
-            return os.path.join(folder_path, file_name)
-    
-    return None
-
-def unzip_file(zip_file_path):
-    extract_to_folder = zip_file_path.replace('.zip', '')
-    
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_to_folder)
-    
-    print(f"Unzipped the file to: {extract_to_folder}")
-
-def main():
-    folder_path = 'path/to/your/folder'
-    user_input = input("Enter the date (YYYY-MM-DD): ")
-    user_date = datetime.strptime(user_input, '%Y-%m-%d')
-    
-    zip_file_path = get_zip_file_by_date(folder_path, user_date)
-    
-    if zip_file_path:
-        unzip_file(zip_file_path)
-    else:
-        print("No zip file found for the given date.")
-
-import os
 import subprocess
 
-folder_path = r"C:\path\to\your\folder"
-date = input("Enter the date (YYYY-MM-DD): ")
-position = ""
+command = r'C:\Span4\SpanPosConv\SpanPosConv.exe /i C:\Span4\Data\newapprox.csv /o C:\Span4\Data\new.pos'
+process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+stdout, stderr = process.communicate()
 
-pre_script_path = os.path.join(folder_path, "Script_Pre.txt")
-bat_file_path = os.path.join(folder_path, "run_approx.bat")
+print("Output:")
+print(stdout.decode())
 
-with open(pre_script_path, 'r') as file:
-    lines = file.readlines()
-
-if len(lines) > 10:
-    lines[10] = "qwerty\n"
-if len(lines) > 14:
-    lines[14] = "abcde\n"
-
-with open(pre_script_path, 'w') as file:
-    file.writelines(lines)
-
-print(f"Modified {pre_script_path} successfully.")
-
-subprocess.run([bat_file_path], shell=True)
-
-print(f"Executed {bat_file_path} successfully.")
+if stderr:
+    print("Errors:")
+    print(stderr.decode())
