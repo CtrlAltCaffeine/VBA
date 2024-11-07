@@ -58,3 +58,28 @@ Sub ImportAndAnalyzeNifty50Data()
     
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
+
+import os
+import pandas as pd
+from natsort import natsorted
+import glob
+
+folder_path = input("Enter the folder path: ")
+num_files = int(input("Enter the number of files to process: "))
+cmf_id = input("Enter the CMF ID to filter: ")
+
+master_df = pd.DataFrame()
+all_files = glob.glob(os.path.join(folder_path, "*"))
+sorted_files = natsorted(all_files, reverse=True)
+top_files = sorted_files[:num_files]
+
+for file in top_files:
+    try:
+        df = pd.read_csv(file)
+        filtered_df = df[df['CMF'] == cmf_id]
+        master_df = pd.concat([master_df, filtered_df], ignore_index=True)
+    except Exception as e:
+        print(f"Error processing file {file}: {e}")
+
+print("Master DataFrame:")
+print(master_df)
