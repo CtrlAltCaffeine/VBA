@@ -58,3 +58,29 @@ Sub ImportAndAnalyzeNifty50Data()
     
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
+import os
+import pandas as pd
+
+def process_folders(base_path):
+    folders = [f for f in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, f))]
+    
+    for folder in folders:
+        if folder[-8:].isdigit():
+            date = folder[-8:]
+            folder_path = os.path.join(base_path, folder)
+            savings_file_path = os.path.join(folder_path, "Reports", "All", f"Savings_Result_{date}.xlsx")
+            
+            if os.path.exists(savings_file_path):
+                try:
+                    df = pd.read_excel(savings_file_path, skiprows=2)
+                    df['Date'] = date
+                    output_path = os.path.join(folder_path, "Reports", "All", f"Savings_Result_{date}_processed.xlsx")
+                    df.to_excel(output_path, index=False)
+                    print(f"Processed and saved: {output_path}")
+                except Exception as e:
+                    print(f"Error processing file {savings_file_path}: {e}")
+            else:
+                print(f"File not found: {savings_file_path}")
+
+base_folder_path = "path/to/your/base/folder"
+process_folders(base_folder_path)
