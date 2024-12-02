@@ -58,3 +58,32 @@ Sub ImportAndAnalyzeNifty50Data()
     
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss,SSS zzz} [logLvl=%p] [thr=%t ctgy="%c"] -%m%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="app_appender" filePattern="./dlLogger.out.%d{yyyy-MM-dd}-%i" fileName="./dlLogger.out">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="error"/>
+        <Logger name="org.hibernate.validator.internal.util.Version" level="DEBUG"/>
+        <Logger name="org.springframework.boot.actuate.endpoint.jmx" level="DEBUG"/>
+        <Logger name="org.thymeleaf" level="INFO"/>
+        <Root level="DEBUG">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="app_appender"/>
+        </Root>
+    </Loggers>
+</Configuration>
