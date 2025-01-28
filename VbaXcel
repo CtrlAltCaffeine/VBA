@@ -59,3 +59,6 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+df1['Match'] = df1.apply(
+    lambda row: row['Match'] if row['Match'] else ("CMF" if any(row['Column1'] in val for val in df2['Column2']) else ""),
+    axis=1
