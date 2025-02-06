@@ -1,85 +1,24 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
 import requests
-import base64
 
-def get_token(url, username, password):
-    payload = {"username": username, "password": password}
-    r = requests.post(url, json=payload)
-    return r.json().get("auth_key") if r.status_code == 200 else None
+login_url = "https://your-api-url.com/login"
+payload = {
+    "username": "your_username",
+    "password": "your_password"
+}
+headers = {
+    "Content-Type": "application/json"
+}
 
-def basic_auth_request(url, username, password):
-    credentials = f"{username}:{password}"
-    token = base64.b64encode(credentials.encode("utf-8")).decode("ascii")
-    headers = {"Authorization": f"Basic {token}"}
-    return requests.get(url, headers=headers)
+response = requests.post(login_url, json=payload, headers=headers)
 
-auth_url = "https://api.example.com/auth"
-username = "your_username"
-password = "your_password"
-
-token = get_token(auth_url, username, password)
-print("Token-based Auth:", token)
-
-endpoint_url = "https://api.example.com/some_endpoint"
-response = basic_auth_request(endpoint_url, username, password)
-print("Basic Auth:", response.status_code, response.text)
+if response.status_code == 200:
+    data = response.json()
+    token = data.get("token")
+    if token:
+        print("Authentication token received:")
+        print(token)
+    else:
+        print("Token not found in the response.")
+else:
+    print(f"Failed to authenticate. Status code: {response.status_code}")
+    print(response.text)
