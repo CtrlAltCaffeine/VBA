@@ -59,3 +59,29 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import requests
+
+url = "http://posttrade-uat.cmegroup.com/MarginServiceApi/portfolios"
+payload = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:portfolioReq xmlns:ns2="http://cmegroup.com/schema/core/1.1">
+    <portfolio desc="My Desc" name="My Name" rptCcy="AUD" id="0">
+        <entities clrMbrFirmId="My Firm" custAcctId="My Account"/>
+    </portfolio>
+</ns2:portfolioReq>
+"""
+headers = {
+    'Content-Type': 'application/xml',
+    'Accept': '*/*',
+    'User-Agent': 'PostmanRuntime/7.26.8',
+    'Authorization': 'Basic OVBJX0VUOhBTDo3YUA2bVkuZIRIRFIUQBOeVL0KKFH3k=',
+    'Cookie': 'SESSION=NmY0ODZmZTUtNDcxZC00YzMwLWJiMzItZWNiYWU1MjJhY2Ji'
+}
+payload_bytes = payload.encode('utf-8')
+response = requests.post(url, headers=headers, data=payload_bytes)
+print("Status Code:", response.status_code)
+print("Response Text:")
+print(response.text)
+if response.status_code == 200:
+    print("Authentication successful")
+else:
+    print("Authentication failed")
