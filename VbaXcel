@@ -59,21 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-from http.client import HTTPSConnection
-from base64 import b64encode
-
-def basic_auth(username, password):
-    token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
-    return f'Basic {token}'
-
-username = "user_name"
-password = "password"
-
-conn = HTTPSConnection("www.example.com")
-headers = {'Authorization': basic_auth(username, password)}
-conn.request('GET', '/', headers=headers)
-response = conn.getresponse()
-data = response.read()
-print("Status:", response.status, response.reason)
-print("Response Data:", data.decode('utf-8'))
-conn.close()
