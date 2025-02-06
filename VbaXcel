@@ -59,3 +59,27 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import requests
+import base64
+
+def get_token(url, username, password):
+    payload = {"username": username, "password": password}
+    r = requests.post(url, json=payload)
+    return r.json().get("auth_key") if r.status_code == 200 else None
+
+def basic_auth_request(url, username, password):
+    credentials = f"{username}:{password}"
+    token = base64.b64encode(credentials.encode("utf-8")).decode("ascii")
+    headers = {"Authorization": f"Basic {token}"}
+    return requests.get(url, headers=headers)
+
+auth_url = "https://api.example.com/auth"
+username = "your_username"
+password = "your_password"
+
+token = get_token(auth_url, username, password)
+print("Token-based Auth:", token)
+
+endpoint_url = "https://api.example.com/some_endpoint"
+response = basic_auth_request(endpoint_url, username, password)
+print("Basic Auth:", response.status_code, response.text)
