@@ -59,21 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-from io import StringIO
-from pdfminer.high_level import extract_text_to_fp
-from pdfminer.layout import LAParams
-
-input_pdf = 'sample.pdf'
-output_xml = 'output.xml'
-output_string = StringIO()
-laparams = LAParams()
-
-with open(input_pdf, 'rb') as in_file:
-    extract_text_to_fp(in_file, output_string, laparams=laparams, output_type='xml', codec='utf-8')
-
-xml_data = output_string.getvalue()
-
-with open(output_xml, 'w', encoding='utf-8') as out_file:
-    out_file.write(xml_data)
-
-print(f"XML conversion completed. The output is saved to {output_xml}")
