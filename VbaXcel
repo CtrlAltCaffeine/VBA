@@ -59,3 +59,21 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import fitz
+
+doc = fitz.open("sample_form.pdf")
+
+for page in doc:
+    print(f"\n--- Page {page.number + 1} ---\n")
+    text = page.get_text("text")
+    print("Page text:")
+    print(text)
+    widgets = page.widgets()
+    if widgets:
+        print("\nForm fields found on this page:")
+        for widget in widgets:
+            field_name = widget.field_name
+            field_value = widget.field_value
+            print(f"Field Name: {field_name}, Field Value: {field_value}")
+    else:
+        print("\nNo form fields found on this page.")
