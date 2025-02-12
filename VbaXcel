@@ -59,35 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import csv
-import random
-import os
-
-def split_csv_into_three_groups(input_csv):
-    with open(input_csv, 'r', newline='') as infile:
-        rows = list(csv.reader(infile))
-    random.shuffle(rows)
-    n = len(rows)
-    base_size = n // 3
-    remainder = n % 3
-    group_sizes = [base_size, base_size, base_size]
-    if remainder:
-        extra_indices = random.sample(range(3), remainder)
-        for idx in extra_indices:
-            group_sizes[idx] += 1
-    start = 0
-    group1 = rows[start:start + group_sizes[0]]
-    start += group_sizes[0]
-    group2 = rows[start:start + group_sizes[1]]
-    start += group_sizes[1]
-    group3 = rows[start:start + group_sizes[2]]
-    base, ext = os.path.splitext(input_csv)
-    with open(f"{base}_group1{ext}", 'w', newline='') as f1:
-        csv.writer(f1).writerows(group1)
-    with open(f"{base}_group2{ext}", 'w', newline='') as f2:
-        csv.writer(f2).writerows(group2)
-    with open(f"{base}_group3{ext}", 'w', newline='') as f3:
-        csv.writer(f3).writerows(group3)
-
-if __name__ == '__main__':
-    split_csv_into_three_groups('data.csv')
