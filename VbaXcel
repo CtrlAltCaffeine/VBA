@@ -59,22 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import pdfplumber
-import pandas as pd
-
-all_tables = []
-
-with pdfplumber.open("sample.pdf") as pdf:
-    for page_num, page in enumerate(pdf.pages, start=1):
-        tables = page.extract_table()
-        if tables:
-            df = pd.DataFrame(tables[1:], columns=tables[0])
-            df.insert(0, "Page", page_num)
-            all_tables.append(df)
-
-if all_tables:
-    final_df = pd.concat(all_tables, ignore_index=True)
-    import ace_tools as tools
-    tools.display_dataframe_to_user(name="Extracted PDF Table", dataframe=final_df)
-else:
-    print("No tables found in the entire PDF.")
