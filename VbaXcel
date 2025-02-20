@@ -59,3 +59,46 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import re
+import pandas as pd
+
+def extract_positions_to_dataframe(json_string):
+    m_positions = re.search(r'"positions"\s*:\s*(.*?)', json_string, re.DOTALL)
+    if not m_positions:
+        raise ValueError("Could not find 'positions' in the JSON string")
+    positions_str = m_positions.group(1)
+    pattern_netqty = re.compile(r'"netQty"\s*:\s*(-?\d+)')
+    pattern_instrument = re.compile(r'"instrument"\s*:\s*(\{.*?\})', re.DOTALL)
+    netqty_matches = [(m.start(), 'netQty', m.group(1)) for m in pattern_netqty.finditer(positions_str)]
+    instrument_matches = [(m.start(), 'instrument', m.group(1)) for m in pattern_instrument.finditer(positions_str)]
+    all_matches = netqty_matches + instrument_matches
+    all_matches.sort(key=lambda x: x[0])
+    
+    def parse_instrument(instr_str):
+        content = instr_str.strip()[1:-1]
+        fields = re.findall(r'"([^"]+)"\s*:\s*("[^"]+"|\d+\.?\d*|null)', content)
+        d = {}
+        for key, value in fields:
+            if value.startswith('"') and value.endswith('"'):
+                d[key] = value[1:-1]
+            elif value == "null":
+                d[key] = None
+            elif '.' in value:
+                d[key] = float(value)
+            else:
+                d[key] = int(value)
+        return d
+
+    results = []
+    current_netqty = None
+    for pos, typ, value in all_matches:
+        if typ == 'netQty':
+            current_netqty = int(value)
+        elif typ == 'instrument':
+            instrument_data = parse_instrument(value)
+            row = {'netQty': current_netqty}
+            row.update(instrument_data)
+            results.append(row)
+            current_netqty = None
+    df = pd.DataFrame(results)
+    return df
