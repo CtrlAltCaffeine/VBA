@@ -1,75 +1,61 @@
-import json
-import re
-import pandas as pd
+Sub ImportAndAnalyzeNifty50Data()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Nifty50Data")
+    
+    ' Clear existing data
+    ws.Cells.Clear
+    
+    ' Import CSV data
+    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
+        .TextFileParseType = xlDelimited
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = False
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = True
+        .TextFilePlatform = xlWindows
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    ' Calculate average closing price for each stock
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    Dim stockSymbols As Collection
+    Set stockSymbols = New Collection
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        On Error Resume Next
+        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
+        On Error GoTo 0
+    Next i
+    
+    Dim stock As Variant
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalClose As Double
+    Dim count As Long
+    Dim avgClose As Double
+    Dim outputRow As Long
+    outputRow = 2
+    
+    ws.Cells(1, "G").Value = "Stock Symbol"
+    ws.Cells(1, "H").Value = "Average Closing Price"
+    
+    For Each stock In stockSymbols
+        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
+        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
+        
+        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
+        count = endRow - startRow + 1
+        avgClose = totalClose / count
+        
+        ws.Cells(outputRow, "G").Value = stock
+        ws.Cells(outputRow, "H").Value = avgClose
+        
+        outputRow = outputRow + 1
+    Next stock
+    
+    MsgBox "Data import and analysis complete!", vbInformation
+End Sub
 
-data = {
-  "portfolios": [
-    {
-      "entries": [
-        {
-          "positions": [
-            {"netQty": 5},
-            {
-              "instrument": {
-                "clearingOrganizationId": "XMAR",
-                "exchangeId": "XOC",
-                "periodCode": "IMM",
-                "productCode": "20250207",
-                "productType": "OOP",
-                "putCallInd": "P",
-                "strike": 218.0,
-                "underlyingPeriodCode": "000000"
-              }
-            },
-            {"netQty": -3},
-            {
-              "instrument": {
-                "clearingOrganizationId": "XMAR",
-                "exchangeId": "XOC",
-                "periodCode": "IMM",
-                "productCode": "20250208",
-                "productType": "OOP",
-                "putCallInd": "C",
-                "strike": 220.0,
-                "underlyingPeriodCode": "000000"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-
-json_str = json.dumps(data)
-pattern = re.compile(r'"netQty"\s*:\s*(-?\d+).*?"instrument"\s*:\s*\{(.*?)\}', re.DOTALL)
-fields = [
-    "clearingOrganizationId",
-    "exchangeId",
-    "periodCode",
-    "productCode",
-    "productType",
-    "putCallInd",
-    "strike",
-    "underlyingPeriodCode"
-]
-rows = []
-for match in pattern.finditer(json_str):
-    net_qty = int(match.group(1))
-    instr_str = match.group(2)
-    row = {"netQty": net_qty}
-    for f in fields:
-        m2 = re.search(rf'"{f}"\s*:\s*(?:"([^"]+)"|(\d+(\.\d+)?))', instr_str)
-        if m2:
-            if m2.group(1) is not None:
-                row[f] = m2.group(1)
-            else:
-                val = float(m2.group(2))
-                row[f] = int(val) if val.is_integer() else val
-        else:
-            row[f] = None
-    rows.append(row)
-
-df = pd.DataFrame(rows)
-print(df)
-print(df.to_csv(index=False))
