@@ -59,3 +59,90 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import json
+import pandas as pd
+
+json_string = """
+{
+  "header": {
+    "sentTime": "2025-02-06T04:33:20Z",
+    "pointInTime": "2025-02-05",
+    "runNumber": 47
+  },
+  "portfolios": [
+    {
+      "currency": "USD",
+      "customerAccountType": "MEMBER",
+      "entries": [
+        {
+          "accountId": "790-98080",
+          "originType": "99",
+          "id": "DRM_798_MINI_DOW",
+          "positions": [
+            {
+              "netQty": 5
+            },
+            {
+              "instrument": {
+                "exchangeId": "XOC",
+                "clearingOrganizationId": "XMAR",
+                "productCode": "20250207",
+                "productType": "OOP",
+                "periodCode": "IMM",
+                "putCallInd": "P",
+                "strike": 218.0,
+                "underlyingPeriodCode": "000000"
+              }
+            },
+            {
+              "netQty": -3
+            },
+            {
+              "instrument": {
+                "exchangeId": "XOC",
+                "clearingOrganizationId": "XMAR",
+                "productCode": "20250208",
+                "productType": "OOP",
+                "periodCode": "IMM",
+                "putCallInd": "C",
+                "strike": 220.0,
+                "underlyingPeriodCode": "000000"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+"""
+
+data = json.loads(json_string)
+rows = []
+for portfolio in data.get("portfolios", []):
+    for entry in portfolio.get("entries", []):
+        positions = entry.get("positions", [])
+        current_net_qty = None
+        for item in positions:
+            if "netQty" in item:
+                current_net_qty = item["netQty"]
+            elif "instrument" in item:
+                instrument = item["instrument"]
+                row = {
+                    "netQty": current_net_qty,
+                    "exchangeId": instrument.get("exchangeId"),
+                    "clearingOrganizationId": instrument.get("clearingOrganizationId"),
+                    "productCode": instrument.get("productCode"),
+                    "productType": instrument.get("productType"),
+                    "periodCode": instrument.get("periodCode"),
+                    "putCallInd": instrument.get("putCallInd"),
+                    "strike": instrument.get("strike"),
+                    "underlyingPeriodCode": instrument.get("underlyingPeriodCode")
+                }
+                rows.append(row)
+                current_net_qty = None
+
+df = pd.DataFrame(rows)
+print(df)
+csv_output = df.to_csv(index=False)
+print(csv_output)
