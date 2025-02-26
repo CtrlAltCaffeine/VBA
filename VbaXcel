@@ -59,30 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import os
-import pandas as pd
-
-def transpose_column_b(folder_path):
-    data = []
-
-    for file in os.listdir(folder_path):
-        if file.endswith(('.xlsx', '.xls')):
-            file_path = os.path.join(folder_path, file)
-
-            try:
-                df = pd.read_excel(file_path, engine='openpyxl')
-                if df.shape[1] > 1:
-                    transposed_b = df.iloc[:, 1].dropna().T
-                    data.append([file] + transposed_b.tolist())
-            except Exception as e:
-                print(f"Error processing {file}: {e}")
-
-    result_df = pd.DataFrame(data)
-    result_df.rename(columns={0: 'File Name'}, inplace=True)
-    return result_df
-
-folder_path = r"your_folder_path_here"
-result_df = transpose_column_b(folder_path)
-
-import ace_tools as tools
-tools.display_dataframe_to_user(name="Transposed Data", dataframe=result_df)
