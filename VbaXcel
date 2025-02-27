@@ -59,33 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import xml.etree.ElementTree as ET
-import csv
-
-def flatten_xml(element, parent_key=''):
-    items = {}
-    for child in element:
-        new_key = f"{parent_key}.{child.tag}" if parent_key else child.tag
-        if list(child):
-            items.update(flatten_xml(child, new_key))
-        else:
-            items[new_key] = child.text
-    return items
-
-def xml_to_csv(xml_file, csv_file):
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-    records = list(root)
-    if not records:
-        records = [root]
-    data = [flatten_xml(record) for record in records]
-    fieldnames = set()
-    for record in data:
-        fieldnames.update(record.keys())
-    fieldnames = list(fieldnames)
-    with open(csv_file, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(data)
-
-xml_to_csv('input.xml', 'output.csv')
