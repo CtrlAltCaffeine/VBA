@@ -59,39 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import pandas as pd
-
-def extract_data(flat_data, keywords, expected_columns):
-    rows = []
-    for kw in keywords:
-        row = {"item": kw}
-        for col in expected_columns:
-            row[col] = None
-        row["ignored"] = []
-        for key, value in flat_data.items():
-            tokens = key.split('.')
-            for i, token in enumerate(tokens):
-                if token == kw and i + 1 < len(tokens):
-                    col_candidate = tokens[i + 1]
-                    if col_candidate in expected_columns:
-                        row[col_candidate] = value
-                    else:
-                        if col_candidate not in row["ignored"]:
-                            row["ignored"].append(col_candidate)
-        rows.append(row)
-    return pd.DataFrame(rows)
-
-flat_data = {
-    "ABCSE.Box1000.value": "20",
-    "ABCSE.Box1000.statement": "Active",
-    "Other.Box1000.123": "ShouldBeIgnored",
-    "Other.Box2000.value": "30",
-    "Other.Box2000.status": "Inactive",
-    "Misc.NotBox1000.something": "ignored"
-}
-
-keywords = ["Box1000", "Box2000"]
-expected_columns = ["value", "statement", "status"]
-
-df = extract_data(flat_data, keywords, expected_columns)
-print(df)
