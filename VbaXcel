@@ -59,3 +59,30 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import pandas as pd
+
+def extract_data(flat_data, keywords):
+    rows = []
+    for kw in keywords:
+        row = {"item": kw}
+        for key, value in flat_data.items():
+            if kw in key:
+                idx = key.find(kw)
+                suffix = key[idx + len(kw):]
+                if suffix.startswith('.'):
+                    suffix = suffix[1:]
+                if suffix:
+                    row[suffix] = value
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+flat_data = {
+    "sometext.Box1000.value": "20",
+    "sometext.Box1000.statement": "Active",
+    "sometext.Box2000.value": "30",
+    "other.Box2000.status": "Inactive"
+}
+
+keywords = ["Box1000", "Box2000"]
+df = extract_data(flat_data, keywords)
+print(df)
