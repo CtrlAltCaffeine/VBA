@@ -59,23 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import xml.etree.ElementTree as ET
-import pandas as pd
-
-xml_file = "your_file.xml"
-tree = ET.parse(xml_file)
-root = tree.getroot()
-
-data = []
-for gcp in root.findall(".//gcp"):
-    exch = gcp.find("exch").text if gcp.find("exch") is not None else ""
-    pdcode = gcp.find("pdcode").text if gcp.find("pdcode") is not None else ""
-    pe = gcp.find("pe").text if gcp.find("pe") is not None else ""
-    
-    data.append({"exch": exch, "pdcode": pdcode, "pe": pe})
-
-df = pd.DataFrame(data)
-csv_file = "output.csv"
-df.to_csv(csv_file, index=False)
-
-print(f"CSV file '{csv_file}' has been created successfully.")
