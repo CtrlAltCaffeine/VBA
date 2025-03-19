@@ -59,28 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import pandas as pd
-
-df1 = pd.DataFrame({
-    'key': ['A', 'B', 'C', 'D']
-})
-
-df2 = pd.DataFrame({
-    'key1': ['A', 'B', 'E'],
-    'key2': ['C', 'D', 'F'],
-    'key3': ['G', 'H', 'I'],
-    'margin': [100, 200, 300]
-})
-
-df1['Present'] = df1['key'].apply(lambda x: 'Yes' if x in df2['key1'].values or x in df2['key2'].values or x in df2['key3'].values else 'No')
-
-df1['Margin'] = df1['key'].apply(
-    lambda x: df2.loc[df2['key1'] == x, 'margin'].values[0] if x in df2['key1'].values else (
-              df2.loc[df2['key2'] == x, 'margin'].values[0] if x in df2['key2'].values else (
-              df2.loc[df2['key3'] == x, 'margin'].values[0] if x in df2['key3'].values else None
-             ))
-)
-
-result = df1[['key', 'Present', 'Margin']]
-
-import ace_tools as tools; tools.display_dataframe_to_user(name="Result", dataframe=result)
