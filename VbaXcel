@@ -59,3 +59,19 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+
+import pandas as pd
+
+df1 = pd.DataFrame({'productType': ['FUT', 'OPT', 'FUT'],
+                    'product code': ['ABC', 'XYZ', 'DEF']})
+
+fut = pd.DataFrame({'ID': ['ABC', 'DEF', 'GHI'],
+                    'Sym': ['ABC1', 'DEF1', 'GHI1'],
+                    'ProdCmplx': ['Complex1', 'Complex2', 'Complex3']})
+
+fut_dict = {**dict(zip(fut['ID'], fut['ProdCmplx'])), **dict(zip(fut['Sym'], fut['ProdCmplx']))}
+
+df1['prod complex'] = df1.apply(lambda x: fut_dict.get(x['product code'], None) if x['productType'] == 'FUT' else None, axis=1)
+
+import ace_tools as tools
+tools.display_dataframe_to_user(name="Updated df1", dataframe=df1)
