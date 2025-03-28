@@ -59,3 +59,23 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import pandas as pd
+
+df = pd.read_excel("your_original_file.xlsx", skiprows=3, header=0)
+df.columns = [
+    "Data_Start", 
+    "Offset.1", "Offset.2", "Offset.3", "Offset.4",
+    "PeriodCode.1", "PeriodCode.2", "PeriodCode.3", "PeriodCode.4",
+    "Price.1", "Price.2", "Price.3", "Price.4"
+]
+df_long = pd.wide_to_long(
+    df, 
+    stubnames=["Offset", "PeriodCode", "Price"],
+    i="Data_Start",
+    j="set",
+    sep=".",
+    suffix="\d+"
+).reset_index()
+df_long = df_long[["Data_Start", "Offset", "PeriodCode", "Price"]]
+df_long.to_excel("transformed_output.xlsx", index=False)
+print(df_long.head())
