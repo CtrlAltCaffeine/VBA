@@ -1,113 +1,38 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
 
-import xmltodict
-import pandas as pd
 
-with open('/mnt/data/file-Tp79FMU9XARcJLokQBZkwp') as f:
-    raw_xml = f.read()
+data_dict = xmltodict.parse(raw_xml, force_list=('portfolio', 'transaction'))
 
-doc = xmltodict.parse(raw_xml)
-portfolio = doc['ns2:portfolioRpt']['portfolio']
-cycle_date = portfolio['cycle']['@date']
+data_for_df = []
 
-rows = []
+portfolios = data_dict.get('ns2:portfolioRpt', {}).get('portfolio', [])
 
-if 'transactions' in portfolio:
-    txs = portfolio['transactions']['transaction']
-    if isinstance(txs, dict):
-        txs = [txs]
-    for txn in txs:
-        payloads = txn['payload']
-        if isinstance(payloads, dict):
-            payloads = [payloads]
-        for payload in payloads:
-            txn_string = payload['string']
-            rows.append({
-                'cycle_date': cycle_date,
-                'pbacctid': None,
-                'transaction_string': txn_string
-            })
+for portfolio_item in portfolios:
+    cycle_date_info = portfolio_item.get('cycleDate')
+    cycle_date = None
+    if isinstance(cycle_date_info, dict):
+        cycle_date = cycle_date_info.get('#text')
+    elif isinstance(cycle_date_info, str):
+        cycle_date = cycle_date_info
 
-entities = portfolio['entities']
-if isinstance(entities, dict):
-    entities = [entities]
+    entities_info = portfolio_item.get('entities', {})
+    clr_mbr_firm_id = entities_info.get('@clrMbrFirmId')
+    pb_acct_id = entities_info.get('@pbAcctId')
 
-for ent in entities:
-    pbacctid = ent['@pbAcctId']
-    if 'transactions' in ent:
-        txs = ent['transactions']['transaction']
-        if isinstance(txs, dict):
-            txs = [txs]
-        for txn in txs:
-            payloads = txn['payload']
-            if isinstance(payloads, dict):
-                payloads = [payloads]
-            for payload in payloads:
-                txn_string = payload['string']
-                rows.append({
-                    'cycle_date': cycle_date,
-                    'pbacctid': pbacctid,
-                    'transaction_string': txn_string
-                })
+    transactions = portfolio_item.get('transaction', [])
+    for transaction_item in transactions:
+        payload_info = transaction_item.get('payload', {})
+        payload_content = None
+        if isinstance(payload_info, dict):
+            payload_content = payload_info.get('#text')
+        elif isinstance(payload_info, str):
+            payload_content = payload_info
 
-df = pd.DataFrame(rows)
+        data_for_df.append({
+            'cycleDate': cycle_date,
+            'clrMbrFirmId': clr_mbr_firm_id,
+            'pbAcctId': pb_acct_id,
+            'transaction_payload': payload_content
+        })
+
+df = pd.DataFrame(data_for_df)
 print(df)
