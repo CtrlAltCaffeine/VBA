@@ -59,3 +59,55 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import xmltodict
+import pandas as pd
+
+with open('/mnt/data/file-Tp79FMU9XARcJLokQBZkwp') as f:
+    raw_xml = f.read()
+
+doc = xmltodict.parse(raw_xml)
+portfolio = doc['ns2:portfolioRpt']['portfolio']
+cycle_date = portfolio['cycle']['@date']
+
+rows = []
+
+if 'transactions' in portfolio:
+    txs = portfolio['transactions']['transaction']
+    if isinstance(txs, dict):
+        txs = [txs]
+    for txn in txs:
+        payloads = txn['payload']
+        if isinstance(payloads, dict):
+            payloads = [payloads]
+        for payload in payloads:
+            txn_string = payload['string']
+            rows.append({
+                'cycle_date': cycle_date,
+                'pbacctid': None,
+                'transaction_string': txn_string
+            })
+
+entities = portfolio['entities']
+if isinstance(entities, dict):
+    entities = [entities]
+
+for ent in entities:
+    pbacctid = ent['@pbAcctId']
+    if 'transactions' in ent:
+        txs = ent['transactions']['transaction']
+        if isinstance(txs, dict):
+            txs = [txs]
+        for txn in txs:
+            payloads = txn['payload']
+            if isinstance(payloads, dict):
+                payloads = [payloads]
+            for payload in payloads:
+                txn_string = payload['string']
+                rows.append({
+                    'cycle_date': cycle_date,
+                    'pbacctid': pbacctid,
+                    'transaction_string': txn_string
+                })
+
+df = pd.DataFrame(rows)
+print(df)
