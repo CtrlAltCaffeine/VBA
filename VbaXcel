@@ -1,24 +1,61 @@
-import xml.etree.ElementTree as ET
-import pandas as pd
+Sub ImportAndAnalyzeNifty50Data()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Nifty50Data")
+    
+    ' Clear existing data
+    ws.Cells.Clear
+    
+    ' Import CSV data
+    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
+        .TextFileParseType = xlDelimited
+        .TextFileConsecutiveDelimiter = False
+        .TextFileTabDelimiter = False
+        .TextFileSemicolonDelimiter = False
+        .TextFileCommaDelimiter = True
+        .TextFilePlatform = xlWindows
+        .Refresh BackgroundQuery:=False
+    End With
+    
+    ' Calculate average closing price for each stock
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    
+    Dim stockSymbols As Collection
+    Set stockSymbols = New Collection
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        On Error Resume Next
+        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
+        On Error GoTo 0
+    Next i
+    
+    Dim stock As Variant
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalClose As Double
+    Dim count As Long
+    Dim avgClose As Double
+    Dim outputRow As Long
+    outputRow = 2
+    
+    ws.Cells(1, "G").Value = "Stock Symbol"
+    ws.Cells(1, "H").Value = "Average Closing Price"
+    
+    For Each stock In stockSymbols
+        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
+        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
+        
+        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
+        count = endRow - startRow + 1
+        avgClose = totalClose / count
+        
+        ws.Cells(outputRow, "G").Value = stock
+        ws.Cells(outputRow, "H").Value = avgClose
+        
+        outputRow = outputRow + 1
+    Next stock
+    
+    MsgBox "Data import and analysis complete!", vbInformation
+End Sub
 
-root = ET.fromstring(raw_xml)
-data_for_df = []
-
-for portfolio in root.findall('portfolio'):
-    cycle_date_element = portfolio.find('cycleDate')
-    cycle_date = cycle_date_element.text if cycle_date_element is not None else None
-    entities_element = portfolio.find('entities')
-    clr_mbr_firm_id = entities_element.get('clrMbrFirmId') if entities_element is not None else None
-    pb_acct_id = entities_element.get('pbAcctId') if entities_element is not None else None
-    for transaction in portfolio.findall('transaction'):
-        payload_element = transaction.find('payload')
-        payload_content = payload_element.text if payload_element is not None else None
-        data_for_df.append({
-            'cycleDate': cycle_date,
-            'clrMbrFirmId': clr_mbr_firm_id,
-            'pbAcctId': pb_acct_id,
-            'transaction_payload': payload_content
-        })
-
-df = pd.DataFrame(data_for_df)
-print(df)
