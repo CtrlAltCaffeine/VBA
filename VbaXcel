@@ -1,32 +1,18 @@
+import xml.etree.ElementTree as ET
+import pandas as pd
 
-
-data_dict = xmltodict.parse(raw_xml, force_list=('portfolio', 'transaction'))
-
+root = ET.fromstring(raw_xml)
 data_for_df = []
 
-portfolios = data_dict.get('ns2:portfolioRpt', {}).get('portfolio', [])
-
-for portfolio_item in portfolios:
-    cycle_date_info = portfolio_item.get('cycleDate')
-    cycle_date = None
-    if isinstance(cycle_date_info, dict):
-        cycle_date = cycle_date_info.get('#text')
-    elif isinstance(cycle_date_info, str):
-        cycle_date = cycle_date_info
-
-    entities_info = portfolio_item.get('entities', {})
-    clr_mbr_firm_id = entities_info.get('@clrMbrFirmId')
-    pb_acct_id = entities_info.get('@pbAcctId')
-
-    transactions = portfolio_item.get('transaction', [])
-    for transaction_item in transactions:
-        payload_info = transaction_item.get('payload', {})
-        payload_content = None
-        if isinstance(payload_info, dict):
-            payload_content = payload_info.get('#text')
-        elif isinstance(payload_info, str):
-            payload_content = payload_info
-
+for portfolio in root.findall('portfolio'):
+    cycle_date_element = portfolio.find('cycleDate')
+    cycle_date = cycle_date_element.text if cycle_date_element is not None else None
+    entities_element = portfolio.find('entities')
+    clr_mbr_firm_id = entities_element.get('clrMbrFirmId') if entities_element is not None else None
+    pb_acct_id = entities_element.get('pbAcctId') if entities_element is not None else None
+    for transaction in portfolio.findall('transaction'):
+        payload_element = transaction.find('payload')
+        payload_content = payload_element.text if payload_element is not None else None
         data_for_df.append({
             'cycleDate': cycle_date,
             'clrMbrFirmId': clr_mbr_firm_id,
