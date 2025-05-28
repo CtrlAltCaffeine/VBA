@@ -132,3 +132,72 @@ function processEmailsForAbcLabel() {
 function runProcessing() {
   processEmailsForAbcLabel();
 }
+
+function processEmailsForAbcLabel() {
+  const LABEL_NAME = "abc";
+  const TARGET_CC_EMAIL_LOWER = "jeevan@gmail.com".toLowerCase(); // Pre-lowercase for efficiency
+  const SEARCH_TERM_SUBJECT_LOWER = "abc".toLowerCase(); // Assuming "abc" is what you want to search, ensure it's lowercase for consistent comparison
+
+  try {
+    let label = GmailApp.getUserLabelByName(LABEL_NAME);
+    if (!label) {
+      label = GmailApp.createLabel(LABEL_NAME);
+      Logger.log(`Label "${LABEL_NAME}" created.`);
+    } else {
+      Logger.log(`Label "${LABEL_NAME}" already exists.`);
+    }
+
+    // Consider increasing the '20' if you need to process more threads
+    const threads = GmailApp.search('is:inbox', 0, 50); // Example: increased to 50
+    Logger.log(`Found ${threads.length} threads to process.`);
+
+    for (let i = 0; i < threads.length; i++) {
+      const thread = threads[i];
+      const messages = thread.getMessages();
+
+      for (let j = 0; j < messages.length; j++) {
+        const message = messages[j];
+
+        // 1. Check if this message is already labeled
+        let isMessageAlreadyLabeled = false;
+        const messageLabels = message.getLabels();
+        for (let k = 0; k < messageLabels.length; k++) {
+          if (messageLabels[k].getName() === LABEL_NAME) {
+            isMessageAlreadyLabeled = true;
+            break;
+          }
+        }
+
+        if (isMessageAlreadyLabeled) {
+          // Logger.log(`Message "${message.getSubject()}" already has label "${LABEL_NAME}". Skipping.`);
+          continue; // Skip this specific message
+        }
+
+        const subject = message.getSubject().toLowerCase();
+        const ccHeader = message.getCc(); // Get the raw CC string
+
+        let targetCcFoundInMessage = false;
+        if (ccHeader && ccHeader.trim() !== "") {
+          if (ccHeader.toLowerCase().includes(TARGET_CC_EMAIL_LOWER)) {
+            targetCcFoundInMessage = true;
+          }
+        }
+
+        // Logger.log(`Message: "${subject}", Has Subject Term: ${subject.includes(SEARCH_TERM_SUBJECT_LOWER)}, Has Target CC: ${targetCcFoundInMessage}`);
+
+        if (subject.includes(SEARCH_TERM_SUBJECT_LOWER) && targetCcFoundInMessage) {
+          message.addLabel(label);
+          Logger.log(`Applied label "${LABEL_NAME}" to message: "${message.getSubject()}" (ID: ${message.getId()})`);
+        }
+      }
+    }
+    Logger.log('Finished processing emails.');
+  } catch (e) {
+    Logger.log(`Error: ${e.toString()}`);
+    Logger.log(`Stack: ${e.stack}`);
+  }
+}
+
+function runProcessing() {
+  processEmailsForAbcLabel();
+}
