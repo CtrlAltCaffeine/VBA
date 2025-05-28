@@ -72,11 +72,13 @@ function processEmailsForAbcLabel() {
 
     for (let i = 0; i < threads.length; i++) {
       const thread = threads[i];
+      // Skip threads that already have the label
+      if (thread.getLabels().some(l => l.getName() === LABEL_NAME)) continue;
+
       const messages = thread.getMessages();
 
       for (let j = 0; j < messages.length; j++) {
         const message = messages[j];
-        if (message.getLabels().some(l => l.getName() === LABEL_NAME)) continue;
 
         const body = message.getPlainBody().toLowerCase();
         const ccArray = message.getCc().toLowerCase().split(',').map(s => s.trim());
