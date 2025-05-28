@@ -59,3 +59,39 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+function processEmailsForAbcLabel() {
+  const LABEL_NAME = "abc";
+  const TARGET_CC_EMAIL = "jeevan@gmail.com".toLowerCase();
+  const SEARCH_TERM_BODY = "abc";
+
+  try {
+    let label = GmailApp.getUserLabelByName(LABEL_NAME);
+    if (!label) label = GmailApp.createLabel(LABEL_NAME);
+
+    const threads = GmailApp.search('is:inbox', 0, 20);
+
+    for (let i = 0; i < threads.length; i++) {
+      const thread = threads[i];
+      const messages = thread.getMessages();
+
+      for (let j = 0; j < messages.length; j++) {
+        const message = messages[j];
+        if (message.getLabels().some(l => l.getName() === LABEL_NAME)) continue;
+
+        const body = message.getPlainBody().toLowerCase();
+        const ccArray = message.getCc().toLowerCase().split(',').map(s => s.trim());
+
+        if (body.includes(SEARCH_TERM_BODY) && ccArray.includes(TARGET_CC_EMAIL)) {
+          message.addLabel(label);
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log(`Error: ${e.toString()}`);
+    Logger.log(`Stack: ${e.stack}`);
+  }
+}
+
+function runProcessing() {
+  processEmailsForAbcLabel();
+}
