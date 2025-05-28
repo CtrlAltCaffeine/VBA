@@ -97,3 +97,38 @@ function processEmailsForAbcLabel() {
 function runProcessing() {
   processEmailsForAbcLabel();
 }
+
+function processEmailsForAbcLabel() {
+  const LABEL_NAME = "abc";
+  const TARGET_CC_EMAIL = "jeevan@gmail.com";
+  const SEARCH_TERM_SUBJECT = "abc";
+
+  try {
+    let label = GmailApp.getUserLabelByName(LABEL_NAME);
+    if (!label) label = GmailApp.createLabel(LABEL_NAME);
+
+    const threads = GmailApp.search('is:inbox', 0, 20);
+
+    for (let i = 0; i < threads.length; i++) {
+      const thread = threads[i];
+      if (thread.getLabels().some(l => l.getName() === LABEL_NAME)) continue;
+
+      const messages = thread.getMessages();
+      for (let j = 0; j < messages.length; j++) {
+        const message = messages[j];
+        const subject = message.getSubject().toLowerCase();
+        const ccArray = message.getCc().toLowerCase().split(',').map(s => s.trim());
+        if (subject.includes(SEARCH_TERM_SUBJECT) && ccArray.includes(TARGET_CC_EMAIL.toLowerCase())) {
+          message.addLabel(label);
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log(`Error: ${e.toString()}`);
+    Logger.log(`Stack: ${e.stack}`);
+  }
+}
+
+function runProcessing() {
+  processEmailsForAbcLabel();
+}
