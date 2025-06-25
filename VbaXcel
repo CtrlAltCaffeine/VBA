@@ -1,182 +1,74 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
 
 /**
  * @OnlyCurrentDoc
  */
 
-function createSubjectTableFromLabel() {
-  const labelName = "ABC"; // *** IMPORTANT: Replace "ABC" with your actual Gmail label name ***
-  const spreadsheetName = "Email Subjects from Labels"; // Name of the Google Sheet to create/use
-  const sheetTabName = `Subjects from ${labelName} Label`; // Name of the tab within the sheet
+function getLabelSubjectsToSheet() {
+  // --- USER CONFIGURATION ---
+  const labelNameToSearch = "MyImportantLabel"; // <<< REPLACE THIS with your exact Gmail label name!
 
-  let ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) {
-    // If the script is not bound to a document, create a new one
-    ss = SpreadsheetApp.create(spreadsheetName);
-    Logger.log(`Created new spreadsheet: ${ss.getUrl()}`);
-  } else if (ss.getName() !== spreadsheetName) {
-    // If bound to a different sheet, open or create the target sheet
-    let existingSs = SpreadsheetApp.getSpreadsheetsByName(spreadsheetName);
-    if (existingSs.length > 0) {
-      ss = existingSs[0];
-      Logger.log(`Using existing spreadsheet: ${ss.getUrl()}`);
-    } else {
-      ss = SpreadsheetApp.create(spreadsheetName);
-      Logger.log(`Created new spreadsheet: ${ss.getUrl()}`);
-    }
-  }
-
-  let sheet = ss.getSheetByName(sheetTabName);
-  if (sheet) {
-    // Clear existing content if the tab already exists
-    sheet.clearContents();
-    Logger.log(`Cleared existing content in tab: ${sheetTabName}`);
-  } else {
-    // Create a new tab if it doesn't exist
-    sheet = ss.insertSheet(sheetTabName);
-    Logger.log(`Created new tab: ${sheetTabName}`);
-  }
-
-  try {
-    const subjects = getAllEmailSubjectsFromLabel(labelName);
-
-    if (subjects.length > 0) {
-      // Prepare data for the sheet (add a header)
-      const data = [["Email Subject"]].concat(subjects.map(subject => [subject]));
-
-      // Write data to the sheet
-      sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
-
-      // Apply basic formatting
-      sheet.setColumnWidth(1, 400); // Set width of the subject column
-      sheet.getRange("A1").setFontWeight("bold").setBackground("#cfe2f3"); // Header styling
-
-      Logger.log(`Successfully wrote ${subjects.length} subjects to sheet: ${sheet.getName()}`);
-      SpreadsheetApp.getUi().alert('Success!', `Successfully extracted ${subjects.length} email subjects from label "${labelName}" and saved them to the sheet "${sheetTabName}".`, SpreadsheetApp.getUi().ButtonSet.OK);
-    } else {
-      sheet.getRange("A1").setValue("No emails found for this label, or the label does not exist.");
-      Logger.log(`No emails found for label "${labelName}".`);
-      SpreadsheetApp.getUi().alert('Information', `No emails found for label "${labelName}".`, SpreadsheetApp.getUi().ButtonSet.OK);
-    }
-
-    // Activate the sheet for easier viewing
-    ss.setActiveSheet(sheet);
-
-  } catch (error) {
-    Logger.log(`Error: ${error.message}`);
-    SpreadsheetApp.getUi().alert('Error', `An error occurred: ${error.message}. Please check the script logs for details.`, SpreadsheetApp.getUi().ButtonSet.OK);
-  }
-}
-
-/**
- * Retrieves all email subjects from a given Gmail label, handling pagination.
- * @param {string} labelName The name of the Gmail label to search.
- * @returns {string[]} An array of email subjects.
- */
-function getAllEmailSubjectsFromLabel(labelName) {
+  // --- SCRIPT LOGIC ---
   const subjects = [];
-  const label = GmailApp.getUserLabelByName(labelName);
+  const label = GmailApp.getUserLabelByName(labelNameToSearch);
 
   if (!label) {
-    Logger.log(`Label "${labelName}" not found.`);
-    throw new Error(`Label "${labelName}" not found. Please ensure the label name is correct and exists in your Gmail.`);
+    Logger.log(`Error: Label "${labelNameToSearch}" not found.`);
+    SpreadsheetApp.getUi().alert('Error', `Gmail label "${labelNameToSearch}" not found. Please check the name and try again.`, SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
   }
 
   let start = 0;
-  const maxResults = 500; // Maximum number of threads to retrieve per call
+  const maxThreadsPerCall = 500; // Gmail API limit per call
 
-  Logger.log(`Starting to fetch threads from label: "${labelName}"`);
+  Logger.log(`Starting to fetch subjects from label: "${labelNameToSearch}"`);
 
+  // Loop to get all threads (handles more than 500 threads)
   while (true) {
-    try {
-      const threads = label.getThreads(start, maxResults);
-
-      if (threads.length === 0) {
-        break; // No more threads to retrieve
-      }
-
-      Logger.log(`Fetched ${threads.length} threads from start index ${start}.`);
-
-      for (let i = 0; i < threads.length; i++) {
-        // Get only the first message subject in the thread, as per common use case for "mail subject"
-        // If you need all messages subjects in a thread, you'd iterate `threads[i].getMessages()`
-        const message = threads[i].getMessages()[0]; // Get the first message in the thread
-        if (message) {
-          subjects.push(message.getSubject());
-        }
-      }
-      
-      start += threads.length; // Increment start by the number of threads actually retrieved
-      
-      // Optional: Add a small delay to avoid hitting Google's rate limits for very large labels
-      // Utilities.sleep(100); 
-
-    } catch (e) {
-      Logger.log(`Error fetching threads at start ${start}: ${e.message}`);
-      throw new Error(`Failed to retrieve threads from Gmail: ${e.message}`);
+    const threads = label.getThreads(start, maxThreadsPerCall);
+    if (threads.length === 0) {
+      break; // No more threads
     }
-  }
-  Logger.log(`Finished fetching all threads. Total subjects collected: ${subjects.length}`);
-  return subjects;
-}
 
+    for (let i = 0; i < threads.length; i++) {
+      const messages = threads[i].getMessages();
+      for (let j = 0; j < messages.length; j++) {
+        subjects.push([messages[j].getSubject()]); // Push as a 2D array for setValues
+      }
+    }
+    start += threads.length;
+    // Utilities.sleep(50); // Optional: small delay for very large labels
+  }
+
+  Logger.log(`Found ${subjects.length} subjects.`);
+
+  // Create or get the active spreadsheet
+  let ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    ss = SpreadsheetApp.create(`Email Subjects - ${labelNameToSearch}`); // Creates a new sheet if run standalone
+    Logger.log(`Created new spreadsheet: ${ss.getUrl()}`);
+  }
+
+  // Create a new sheet (tab) for the results
+  const newSheetName = `Subjects from ${labelNameToSearch} (${new Date().toLocaleDateString()})`;
+  let sheet = ss.getSheetByName(newSheetName);
+  if (sheet) {
+    sheet.clearContents(); // Clear if it already exists from a previous run on the same day
+  } else {
+    sheet = ss.insertSheet(newSheetName);
+  }
+  
+  sheet.appendRow(["Email Subject"]); // Header
+  sheet.getRange(1, 1).setFontWeight("bold"); // Bold the header
+
+  if (subjects.length > 0) {
+    sheet.getRange(2, 1, subjects.length, 1).setValues(subjects);
+    sheet.setColumnWidth(1, 400); // Set a reasonable width for subjects
+    Logger.log(`Subjects written to sheet: ${sheet.getName()}`);
+  } else {
+    sheet.appendRow(["No subjects found in this label."]);
+    Logger.log("No subjects found.");
+  }
+
+  ss.setActiveSheet(sheet); // Make the new sheet active
+  SpreadsheetApp.getUi().alert('Done', `Successfully extracted ${subjects.length} subjects from "${labelNameToSearch}" and saved to the sheet "${sheet.getName()}".`, SpreadsheetApp.getUi().ButtonSet.OK);
+}
