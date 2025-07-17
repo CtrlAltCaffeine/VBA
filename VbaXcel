@@ -59,3 +59,28 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import pandas as pd
+
+df = pd.DataFrame({
+    'domain': ['abc.com', 'abc.com', 'xyz.com', '123.com', 'xyz.com'],
+    'env': ['on prem', 'gcp', 'gcp', 'on prem', 'on prem']
+})
+
+envs_per_domain = df.groupby('domain')['env'].unique().reset_index()
+
+def classify(env_list):
+    env_set = set(env_list)
+    if {'on prem', 'gcp'}.issubset(env_set):
+        return 'both'
+    elif 'gcp' in env_set:
+        return 'only gcp'
+    elif 'on prem' in env_set:
+        return 'only on prem'
+    else:
+        return 'unknown'
+
+envs_per_domain['location_type'] = envs_per_domain['env'].apply(classify)
+
+result = envs_per_domain.drop(columns='env')
+
+print(result)
