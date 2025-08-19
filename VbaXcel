@@ -59,28 +59,24 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import pandas as pd
+import dask.dataframe as dd
 
-df = pd.DataFrame({
-    'domain': ['abc.com', 'abc.com', 'xyz.com', '123.com', 'xyz.com'],
-    'env': ['on prem', 'gcp', 'gcp', 'on prem', 'on prem']
-})
+file1 = "customers1.csv"
+file2 = "customers2.csv"
+out_file = "comparison_result.csv"
 
-envs_per_domain = df.groupby('domain')['env'].unique().reset_index()
+df1 = dd.read_csv(file1, dtype=str, blocksize="64MB")
+df2 = dd.read_csv(file2, dtype=str, blocksize="64MB")
 
-def classify(env_list):
-    env_set = set(env_list)
-    if {'on prem', 'gcp'}.issubset(env_set):
-        return 'both'
-    elif 'gcp' in env_set:
-        return 'only gcp'
-    elif 'on prem' in env_set:
-        return 'only on prem'
-    else:
-        return 'unknown'
+df1 = df1.reset_index(drop=True)
+df2 = df2.reset_index(drop=True)
 
-envs_per_domain['location_type'] = envs_per_domain['env'].apply(classify)
+colnames = df1.columns.tolist()
+df2.columns = colnames
 
-result = envs_per_domain.drop(columns='env')
+out = dd.concat([
+    df1[c].where(df1[c] == df2[c], "Value 1: " + df1[c] + " | Value 2: " + df2[c]).rename(c)
+    for c in colnames
+], axis=1)
 
-print(result)
+out.compute().to_csv(out_file, index=False, single_file=True)
