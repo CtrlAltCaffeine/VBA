@@ -59,24 +59,3 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
-import dask.dataframe as dd
-
-file1 = "customers1.csv"
-file2 = "customers2.csv"
-out_file = "comparison_result.csv"
-
-df1 = dd.read_csv(file1, dtype=str, blocksize="64MB")
-df2 = dd.read_csv(file2, dtype=str, blocksize="64MB")
-
-df1 = df1.reset_index(drop=True)
-df2 = df2.reset_index(drop=True)
-
-colnames = df1.columns.tolist()
-df2.columns = colnames
-
-out = dd.concat([
-    df1[c].where(df1[c] == df2[c], "Value 1: " + df1[c] + " | Value 2: " + df2[c]).rename(c)
-    for c in colnames
-], axis=1)
-
-out.compute().to_csv(out_file, index=False, single_file=True)
