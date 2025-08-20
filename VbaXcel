@@ -59,3 +59,92 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import dask.dataframe as dd
+import pandas as pd
+
+LEFT_CSV  = "path/to/left.csv"
+RIGHT_CSV = "path/to/right.csv"
+
+OUT_LEFT_SORTED  = "left_sorted.csv"
+OUT_RIGHT_SORTED = "right_sorted.csv"
+OUT_DIFFS        = "cell_diffs_by_id.csv"
+OUT_LEFT_ONLY    = "ids_only_in_left.csv"
+OUT_RIGHT_ONLY   = "ids_only_in_right.csv"
+
+def strip_all(pdf: pd.DataFrame) -> pd.DataFrame:
+    return pdf.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+def add_id(pdf: pd.DataFrame, col_order) -> pd.DataFrame:
+    joined = pdf[col_order].fillna("").astype(str).agg("".join, axis=1)
+    pdf["ID"] = joined.str.replace(r"\s+", "", regex=True)
+    return pdf
+
+def align_by_position(right_dd: dd.DataFrame, left_cols) -> dd.DataFrame:
+    right_cols = list(right_dd.columns)
+    mapping = {}
+    for i, lc in enumerate(left_cols):
+        if i < len(right_cols):
+            mapping[right_cols[i]] = lc
+    return right_dd.rename(columns=mapping)
+
+left  = dd.read_csv(LEFT_CSV,  dtype=str, assume_missing=True)
+right = dd.read_csv(RIGHT_CSV, dtype=str, assume_missing=True)
+
+left  = left.map_partitions(strip_all,  meta=left._meta)
+right = right.map_partitions(strip_all, meta=right._meta)
+
+left_cols = list(left.columns)
+right = align_by_position(right, left_cols)
+
+missing_in_right = [c for c in left_cols if c not in right.columns]
+if missing_in_right:
+    for c in missing_in_right:
+        right[c] = ""
+
+meta_left  = left._meta.assign(ID="")
+meta_right = right._meta.assign(ID="")
+
+left  = left.map_partitions(add_id,  col_order=left_cols,  meta=meta_left)
+right = right.map_partitions(add_id, col_order=left_cols, meta=meta_right)
+
+left_sorted  = left.set_index("ID", shuffle="tasks").reset_index()
+right_sorted = right.set_index("ID", shuffle="tasks").reset_index()
+
+left_sorted.to_csv(OUT_LEFT_SORTED,  single_file=True, index=False)
+right_sorted.to_csv(OUT_RIGHT_SORTED, single_file=True, index=False)
+
+merged = left_sorted.merge(
+    right_sorted,
+    on="ID",
+    how="outer",
+    suffixes=("_L", "_R")
+)
+
+cols_L = [c for c in merged.columns if c.endswith("_L") and c[:-2] in left_cols]
+cols_R = [c[:-2] + "_R" for c in cols_L]
+
+L = merged[cols_L].rename(columns=lambda c: c[:-2])
+R = merged[cols_R].rename(columns=lambda c: c[:-2])
+
+L = L.fillna("")
+R = R.fillna("")
+
+mask = L.ne(R)
+diff = L.where(~mask, L + " | " + R)
+
+out = merged[["ID"]].join(diff)
+out.to_csv(OUT_DIFFS, single_file=True, index=False)
+
+only_left  = merged[merged[[c for c in cols_R]].isna().all(axis=1)][["ID"]]
+only_right = merged[merged[[c for c in cols_L]].isna().all(axis=1)][["ID"]]
+
+only_left.to_csv(OUT_LEFT_ONLY,  single_file=True, index=False)
+only_right.to_csv(OUT_RIGHT_ONLY, single_file=True, index=False)
+
+print("Done:")
+print(f" - Cleaned & sorted left  -> {OUT_LEFT_SORTED}")
+print(f" - Cleaned & sorted right -> {OUT_RIGHT_SORTED}")
+print(f" - Cell-by-cell diffs     -> {OUT_DIFFS}")
+print(f" - IDs only in left       -> {OUT_LEFT_ONLY}")
+print(f" - IDs only in right      -> {OUT_RIGHT_ONLY}")
+
