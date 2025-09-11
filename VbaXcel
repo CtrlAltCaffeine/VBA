@@ -80,3 +80,28 @@ common_metadata = {
     'clrMbrFirmId': collect_attr(entities, '@clrMbrFirmId'),
     'pbAcctId': collect_attr(entities, '@pbAcctId')
 }
+# ---------------- CHANGED BLOCK START ----------------
+entities = portfolio_data.get('entities', {})
+
+def collect_attr(e, attr):
+    vals = []
+    if isinstance(e, list):
+        for elt in e:
+            if isinstance(elt, dict):
+                v = elt.get(attr)
+                if isinstance(v, list):
+                    vals.extend(str(item) for item in v if item is not None)
+                elif v is not None:
+                    vals.append(str(v))
+            else:
+                vals.append(str(elt))
+        return ','.join(vals) if vals else None
+
+    if isinstance(e, dict):
+        v = e.get(attr)
+        if isinstance(v, list):
+            return ','.join(str(item) for item in v if item is not None)
+        return v
+
+    return None
+# ---------------- CHANGED BLOCK END ----------------
