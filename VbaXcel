@@ -59,3 +59,24 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+entities = portfolio_data.get('entities', {})
+
+def collect_attr(e, attr):
+    if isinstance(e, list):
+        vals = [elt.get(attr) for elt in e if isinstance(elt, dict) and elt.get(attr) is not None]
+        return ','.join(vals) if vals else None
+    if isinstance(e, dict):
+        v = e.get(attr)
+        if isinstance(v, list):
+            return ','.join(v)
+        return v
+    return None
+
+common_metadata = {
+    'report_status': report_data['@status'],
+    'portfolio_id': portfolio_data['@id'],
+    'cycle_date': portfolio_data['cycle']['@date'],
+    'cycle_code': portfolio_data['cycle']['@code'],
+    'clrMbrFirmId': collect_attr(entities, '@clrMbrFirmId'),
+    'pbAcctId': collect_attr(entities, '@pbAcctId')
+}
