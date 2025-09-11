@@ -1,107 +1,72 @@
-Sub ImportAndAnalyzeNifty50Data()
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Sheets("Nifty50Data")
-    
-    ' Clear existing data
-    ws.Cells.Clear
-    
-    ' Import CSV data
-    With ws.QueryTables.Add(Connection:="TEXT;nifty_50_data.csv", Destination:=ws.Range("A1"))
-        .TextFileParseType = xlDelimited
-        .TextFileConsecutiveDelimiter = False
-        .TextFileTabDelimiter = False
-        .TextFileSemicolonDelimiter = False
-        .TextFileCommaDelimiter = True
-        .TextFilePlatform = xlWindows
-        .Refresh BackgroundQuery:=False
-    End With
-    
-    ' Calculate average closing price for each stock
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    
-    Dim stockSymbols As Collection
-    Set stockSymbols = New Collection
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        On Error Resume Next
-        stockSymbols.Add ws.Cells(i, 1).Value, CStr(ws.Cells(i, 1).Value)
-        On Error GoTo 0
-    Next i
-    
-    Dim stock As Variant
-    Dim startRow As Long
-    Dim endRow As Long
-    Dim totalClose As Double
-    Dim count As Long
-    Dim avgClose As Double
-    Dim outputRow As Long
-    outputRow = 2
-    
-    ws.Cells(1, "G").Value = "Stock Symbol"
-    ws.Cells(1, "H").Value = "Average Closing Price"
-    
-    For Each stock In stockSymbols
-        startRow = Application.WorksheetFunction.Match(stock, ws.Columns("A"), 0)
-        endRow = Application.WorksheetFunction.Match(stock & ".99999999999", ws.Columns("A"), 1) - 1
-        
-        totalClose = Application.WorksheetFunction.Sum(ws.Range("F" & startRow & ":F" & endRow))
-        count = endRow - startRow + 1
-        avgClose = totalClose / count
-        
-        ws.Cells(outputRow, "G").Value = stock
-        ws.Cells(outputRow, "H").Value = avgClose
-        
-        outputRow = outputRow + 1
-    Next stock
-    
-    MsgBox "Data import and analysis complete!", vbInformation
-End Sub
-
-entities = portfolio_data.get('entities', {})
-
-def collect_attr(e, attr):
-    if isinstance(e, list):
-        vals = [elt.get(attr) for elt in e if isinstance(elt, dict) and elt.get(attr) is not None]
-        return ','.join(vals) if vals else None
-    if isinstance(e, dict):
-        v = e.get(attr)
-        if isinstance(v, list):
-            return ','.join(v)
-        return v
-    return None
-
-common_metadata = {
-    'report_status': report_data['@status'],
-    'portfolio_id': portfolio_data['@id'],
-    'cycle_date': portfolio_data['cycle']['@date'],
-    'cycle_code': portfolio_data['cycle']['@code'],
-    'clrMbrFirmId': collect_attr(entities, '@clrMbrFirmId'),
-    'pbAcctId': collect_attr(entities, '@pbAcctId')
-}
 # ---------------- CHANGED BLOCK START ----------------
-entities = portfolio_data.get('entities', {})
+portfolio_list = portfolio_data if isinstance(portfolio_data, list) else [portfolio_data]
 
 def collect_attr(e, attr):
     vals = []
-    if isinstance(e, list):
-        for elt in e:
-            if isinstance(elt, dict):
-                v = elt.get(attr)
-                if isinstance(v, list):
-                    vals.extend(str(item) for item in v if item is not None)
-                elif v is not None:
-                    vals.append(str(v))
-            else:
-                vals.append(str(elt))
-        return ','.join(vals) if vals else None
-
     if isinstance(e, dict):
         v = e.get(attr)
         if isinstance(v, list):
-            return ','.join(str(item) for item in v if item is not None)
-        return v
+            for item in v:
+                if isinstance(item, dict):
+                    for subv in item.values():
+                        if subv is not None and not isinstance(subv, dict):
+                            vals.append(str(subv))
+                else:
+                    vals.append(str(item))
+        elif v is not None:
+            vals.append(str(v))
+    elif isinstance(e, list):
+        for elt in e:
+            if isinstance(elt, dict):
+                vv = elt.get(attr)
+                if isinstance(vv, list):
+                    for it in vv:
+                        if isinstance(it, dict):
+                            continue
+                        vals.append(str(it))
+                elif vv is not None:
+                    vals.append(str(vv))
+            elif isinstance(elt, list):
+                for sub in elt:
+                    if isinstance(sub, dict):
+                        sv = sub.get(attr)
+                        if sv is None:
+                            continue
+                        if isinstance(sv, list):
+                            for it in sv:
+                                vals.append(str(it))
+                        else:
+                            vals.append(str(sv))
+                    else:
+                        vals.append(str(sub))
+            else:
+                vals.append(str(elt))
+    else:
+        if e is not None:
+            vals.append(str(e))
+    return ','.join(vals) if vals else None
 
-    return None
+for p in portfolio_list:
+    entities = p.get('entities', {}) if isinstance(p, dict) else {}
+    common_metadata = {
+        'report_status': report_data.get('@status'),
+        'portfolio_id': p.get('@id') if isinstance(p, dict) else None,
+        'cycle_date': (p.get('cycle') or {}).get('@date') if isinstance(p, dict) else None,
+        'cycle_code': (p.get('cycle') or {}).get('@code') if isinstance(p, dict) else None,
+        'clrMbrFirmId': collect_attr(entities, '@clrMbrFirmId'),
+        'pbAcctId': collect_attr(entities, '@pbAcctId')
+    }
+    transactions = (p.get('transactions') or {}).get('transaction') if isinstance(p, dict) else None
+    if transactions is None:
+        continue
+    if isinstance(transactions, dict):
+        transactions = [transactions]
+    for transaction in transactions:
+        xml_payload_string = transaction.get('payload', {}).get('string') if isinstance(transaction, dict) else None
+        if not xml_payload_string:
+            continue
+        record = parse_xml_record(xml_payload_string)
+        if record:
+            full_record = {**common_metadata, **record}
+            parsed_records.append(full_record)
 # ---------------- CHANGED BLOCK END ----------------
