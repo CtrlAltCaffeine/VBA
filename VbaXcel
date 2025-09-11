@@ -59,3 +59,28 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import pandas as pd
+
+file = "your_file.xlsx"
+df1 = pd.read_excel(file, sheet_name="Sheet1")
+df2 = pd.read_excel(file, sheet_name="Sheet2")
+
+common_ids = set(df1['Pbaccntid']).intersection(set(df2['Pbaccntid']))
+df1 = df1[df1['Pbaccntid'].isin(common_ids)].set_index("Pbaccntid")
+df2 = df2[df2['Pbaccntid'].isin(common_ids)].set_index("Pbaccntid")
+
+comparison = df1.eq(df2)
+all_match_ids = comparison.all(axis=1)
+
+matching_ids = all_match_ids[all_match_ids].index.tolist()
+mismatching_ids = all_match_ids[~all_match_ids].index.tolist()
+
+diffs = {}
+for idx in mismatching_ids:
+    mismatches = comparison.loc[idx][comparison.loc[idx] == False].index.tolist()
+    diffs[idx] = mismatches
+
+print("Matching Pbaccntid:", matching_ids)
+print("Mismatching Pbaccntid and their differing columns:")
+for k, v in diffs.items():
+    print(f"{k}: {v}")
