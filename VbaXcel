@@ -59,3 +59,45 @@ Sub ImportAndAnalyzeNifty50Data()
     MsgBox "Data import and analysis complete!", vbInformation
 End Sub
 
+import pandas as pd
+import numpy as np
+
+def greedy_pair_and_diff(path_a, path_b, sheet_name=None):
+    dfA = pd.read_excel(path_a, sheet_name=sheet_name, dtype=str).fillna("")
+    dfB = pd.read_excel(path_b, sheet_name=sheet_name, dtype=str).fillna("")
+    cols = [c for c in dfA.columns if c in dfB.columns]
+    dfA = dfA[cols].reset_index(drop=True)
+    dfB = dfB[cols].reset_index(drop=True)
+
+    nA, nB = len(dfA), len(dfB)
+    usedB = np.zeros(nB, dtype=bool)
+    differences = []
+
+    arrA = dfA.values.astype(str)
+    arrB = dfB.values.astype(str)
+
+    for i in range(nA):
+        mask = ~usedB
+        if not mask.any():
+            break
+        candidates = np.where(mask)[0]
+        eq = (arrB[candidates, :] == arrA[i, :])
+        scores = eq.sum(axis=1)
+        best_idx = candidates[np.argmax(scores)]
+        usedB[best_idx] = True
+
+        diff_cols = []
+        for k, col in enumerate(cols):
+            if arrA[i, k] != arrB[best_idx, k]:
+                diff_cols.append((col, arrA[i, k], arrB[best_idx, k]))
+
+        if diff_cols:
+            differences.append({
+                "rowA_index": i,
+                "rowB_index": int(best_idx),
+                "diff_count": len(diff_cols),
+                "diffs": diff_cols
+            })
+
+    unmatched_B = list(np.where(~usedB)[0])
+    return differences, unmatched_B
